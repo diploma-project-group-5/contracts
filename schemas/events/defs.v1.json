@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/events/defs.v1.json",
+  "title": "Shared definitions for Lad events (v1)",
+  "description": "DRAFT by osovyk for review; owner TBD. Building blocks referenced by the event schemas. Identifiers are opaque strings (uuids in Lad); no names, signatures or other personal data.",
+  "$defs": {
+    "id": {
+      "description": "Opaque identifier (uuid in Lad). Never a name or a teacher signature.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "uuid": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "instant": {
+      "description": "A moment in time (timestamptz), RFC 3339 with an explicit offset.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "date": {
+      "description": "A calendar date in Europe/Kyiv (spec §04 'Time model').",
+      "type": "string",
+      "format": "date"
+    },
+    "day": {
+      "description": "ISO weekday of a school day: 1 = Monday .. 6 = Saturday.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6
+    },
+    "lesson_no": {
+      "description": "Lesson number within a day, 1..lessons_per_day.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "model": {
+      "description": "Capacity model: \"1.1\" for the main timetable, \"1.2\" for the alert timetable.",
+      "enum": ["1.1", "1.2"]
+    },
+    "kind": {
+      "description": "Timetable kind: main -> model 1.1, alert -> model 1.2.",
+      "enum": ["main", "alert"]
+    },
+    "capacity_passport": {
+      "description": "Model 1.1: students + non-teaching staff + teachers on site <= passport, per day.",
+      "type": "object",
+      "required": ["passport"],
+      "properties": {
+        "passport": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "capacity_alert": {
+      "description": "Model 1.2: (1) students <= seats AND (2) students + staff + teachers on site <= passport, per day.",
+      "type": "object",
+      "required": ["seats", "passport"],
+      "properties": {
+        "seats": { "type": "integer", "minimum": 0 },
+        "passport": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "school_class": {
+      "type": "object",
+      "required": ["id", "students", "priority"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "students": { "type": "integer", "minimum": 0, "maximum": 60 },
+        "priority": {
+          "description": "Priority for in-person learning (secondary objective).",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "subject": {
+      "type": "object",
+      "required": ["id", "priority_area", "no_shelter"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "priority_area": {
+          "description": "Belongs to a priority educational area (primary objective).",
+          "type": "boolean"
+        },
+        "no_shelter": {
+          "description": "'Not held in the shelter': effective only in model 1.2.",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "teacher": {
+      "description": "Teacher projection for the solver: id only, never the signature (ADR 2026-11-04-solver-kafka-mvp).",
+      "type": "object",
+      "required": ["id", "weekly_limit", "unavailable_days"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "weekly_limit": { "type": "integer", "minimum": 0, "maximum": 60 },
+        "unavailable_days": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/day" },
+          "uniqueItems": true,
+          "maxItems": 6
+        }
+      },
+      "additionalProperties": false
+    },
+    "curriculum_row": {
+      "description": "`hours` weekly lessons of a subject for a class taught by one teacher.",
+      "type": "object",
+      "required": ["class_id", "subject_id", "teacher_id", "hours"],
+      "properties": {
+        "class_id": { "$ref": "#/$defs/id" },
+        "subject_id": { "$ref": "#/$defs/id" },
+        "teacher_id": { "$ref": "#/$defs/id" },
+        "hours": { "type": "integer", "minimum": 1, "maximum": 60 }
+      },
+      "additionalProperties": false
+    },
+    "lesson": {
+      "type": "object",
+      "required": ["class_id", "day", "lesson_no", "subject_id", "teacher_id"],
+      "properties": {
+        "class_id": { "$ref": "#/$defs/id" },
+        "day": { "$ref": "#/$defs/day" },
+        "lesson_no": { "$ref": "#/$defs/lesson_no" },
+        "subject_id": { "$ref": "#/$defs/id" },
+        "teacher_id": { "$ref": "#/$defs/id" }
+      },
+      "additionalProperties": false
+    },
+    "day_format": {
+      "description": "Format of a class's day. A day can be in person only if the class has at least one lesson that day.",
+      "type": "object",
+      "required": ["class_id", "day", "in_person"],
+      "properties": {
+        "class_id": { "$ref": "#/$defs/id" },
+        "day": { "$ref": "#/$defs/day" },
+        "in_person": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

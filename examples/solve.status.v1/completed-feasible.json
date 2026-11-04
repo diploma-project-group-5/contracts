@@ -1,0 +1,56 @@
+{
+  "event_id": "3c9e8f5a-1b2d-5e4f-9a8b-7c6d5e4f3a2c",
+  "type": "solve.completed",
+  "schema_version": "1.0",
+  "source": "solver",
+  "time": "2026-11-04T10:15:00+02:00",
+  "correlation_id": "req-5f2c9a",
+  "school_id": "7b0f8c1e-3d2a-4c51-9a6e-1f2b3c4d5e6f",
+  "data": {
+    "job_id": "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+    "status": "FEASIBLE",
+    "lessons": [
+      {
+        "class_id": "c-5a",
+        "day": 1,
+        "lesson_no": 1,
+        "subject_id": "s-math",
+        "teacher_id": "t-1"
+      },
+      {
+        "class_id": "c-9b",
+        "day": 1,
+        "lesson_no": 1,
+        "subject_id": "s-pe",
+        "teacher_id": "t-2"
+      }
+    ],
+    "day_formats": [
+      {
+        "class_id": "c-5a",
+        "day": 1,
+        "in_person": true
+      },
+      {
+        "class_id": "c-9b",
+        "day": 1,
+        "in_person": false
+      }
+    ],
+    "conflicts": [],
+    "stats": {
+      "objective": 843,
+      "best_bound": 1421.0,
+      "primary": 140,
+      "secondary": 3,
+      "wall_time_ms": 58210,
+      "num_workers": 4,
+      "random_seed": 0,
+      "solver_version": "0.1.0",
+      "model_version": "a+b/2026-11-04",
+      "input_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "stop_reason": "time_limit",
+      "quality_relaxed": false
+    }
+  }
+}

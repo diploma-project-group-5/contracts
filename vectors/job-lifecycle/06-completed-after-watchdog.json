@@ -1,0 +1,42 @@
+{
+  "name": "06-completed-after-watchdog",
+  "description": "Пізній completed після того, як сторож закрив задачу, ігнорується.",
+  "job": {
+    "job_id": "8f0c1a2e-0000-4000-8000-000000000001",
+    "created_at": "2026-11-10T10:00:00Z",
+    "queue_deadline_at": "2026-11-10T10:10:00Z",
+    "time_limit_s": 60
+  },
+  "run_deadline_margin_s": 90,
+  "steps": [
+    {
+      "event": {
+        "type": "solve.started",
+        "event_id": "e-started",
+        "data": {
+          "job_id": "8f0c1a2e-0000-4000-8000-000000000001",
+          "started_at": "2026-11-10T10:00:05Z"
+        }
+      }
+    },
+    {
+      "watchdog_at": "2026-11-10T10:02:36Z"
+    },
+    {
+      "event": {
+        "type": "solve.completed",
+        "event_id": "e-completed",
+        "data": {
+          "job_id": "8f0c1a2e-0000-4000-8000-000000000001",
+          "status": "FEASIBLE"
+        }
+      }
+    }
+  ],
+  "expected": {
+    "state": "failed",
+    "ignored_steps": [
+      2
+    ]
+  }
+}

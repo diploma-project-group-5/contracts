@@ -1,0 +1,48 @@
+{
+  "description": "1.1: t-1 has three in-person lessons in two classes and is counted once (55+5+1 = 61)",
+  "model": "1.1",
+  "staff": 5,
+  "capacity": {
+    "passport": 61
+  },
+  "day": {
+    "classes": [
+      {
+        "id": "c-1",
+        "students": 30,
+        "in_person": true
+      },
+      {
+        "id": "c-2",
+        "students": 25,
+        "in_person": true
+      }
+    ],
+    "lessons": [
+      {
+        "class_id": "c-1",
+        "teacher_id": "t-1"
+      },
+      {
+        "class_id": "c-1",
+        "teacher_id": "t-1"
+      },
+      {
+        "class_id": "c-2",
+        "teacher_id": "t-1"
+      }
+    ]
+  },
+  "expected": {
+    "students_in_person": 55,
+    "teachers_on_site": 1,
+    "conditions": {
+      "passport": {
+        "load": 61,
+        "limit": 61,
+        "ok": true
+      }
+    },
+    "ok": true
+  }
+}

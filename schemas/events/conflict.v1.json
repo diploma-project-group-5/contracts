@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/events/conflict.v1.json",
+  "title": "Timetable conflict (v1)",
+  "description": "DRAFT by osovyk for review; owner TBD. One shared conflict shape for solver (solve.completed) and validator-lib (problem+json conflicts[]), ADR 2026-11-04-solver-kafka-mvp §2. The rule vocabulary below is the solver's; validator-lib adds its own codes in a MINOR version. Optional fields locate the conflict; the UI resolves ids to labels (teacher signatures only in the scheduler's cabinet).",
+  "type": "object",
+  "required": ["rule"],
+  "properties": {
+    "rule": {
+      "description": "staff_over_passport: non-teaching staff alone exceed the passport (condition=passport). Zero seats in 1.2 are valid (every class remote); negative limits are invalid_input. class_hours_exceed_slots: a class has more weekly hours than lessons_per_day x school days. teacher_weekly_limit: assigned hours exceed the teacher's weekly limit. teacher_hours_exceed_available_slots: hours exceed lessons_per_day x available days. teacher_unavailable_all_days: the teacher has hours but no available day. row_day_cap: a curriculum row cannot fit the per-day cap on available days. alert_bells: alert bells give no usable lessons (model 1.2). packing: CP-SAT proved infeasibility after the pre-checks passed. invalid_input: the request was rejected as invalid (see error.code).",
+      "enum": [
+        "staff_over_passport",
+        "class_hours_exceed_slots",
+        "teacher_weekly_limit",
+        "teacher_hours_exceed_available_slots",
+        "teacher_unavailable_all_days",
+        "row_day_cap",
+        "alert_bells",
+        "packing",
+        "invalid_input"
+      ]
+    },
+    "class_id": { "$ref": "defs.v1.json#/$defs/id" },
+    "teacher_id": { "$ref": "defs.v1.json#/$defs/id" },
+    "subject_id": { "$ref": "defs.v1.json#/$defs/id" },
+    "day": { "$ref": "defs.v1.json#/$defs/day" },
+    "condition": {
+      "description": "Which capacity condition is violated: seats (model 1.2 only) or passport.",
+      "enum": ["seats", "passport"]
+    },
+    "hint": {
+      "description": "true = heuristic suggestion (e.g. the busiest teachers for `packing`), not a proof.",
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

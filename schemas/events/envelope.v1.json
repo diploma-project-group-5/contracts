@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/events/envelope.v1.json",
+  "title": "Lad event envelope (v1)",
+  "description": "DRAFT by osovyk for review; owner TBD. The same envelope for every topic (spec §12). Partition key is always school_id. Event schemas extend it with allOf and pin `type` and `data`.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "type",
+    "schema_version",
+    "source",
+    "time",
+    "correlation_id",
+    "school_id",
+    "data"
+  ],
+  "properties": {
+    "event_id": {
+      "description": "Unique per event; consumers deduplicate on it (inbox). solver uses uuid5(namespace, \"{job_id}:{type}\") so a re-sent event keeps its id.",
+      "$ref": "defs.v1.json#/$defs/uuid"
+    },
+    "type": {
+      "description": "Event type, e.g. solve.build.requested, solve.started, solve.completed.",
+      "type": "string",
+      "pattern": "^[a-z]+(\\.[a-z]+)+$"
+    },
+    "schema_version": {
+      "description": "MAJOR.MINOR of the data schema. Additive changes bump MINOR (readers ignore unknown fields); breaking changes bump MAJOR and a reader rejects an unknown MAJOR.",
+      "type": "string",
+      "pattern": "^[1-9][0-9]*\\.[0-9]+$"
+    },
+    "source": {
+      "description": "Producing service, e.g. timetable-service, solver.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "time": {
+      "description": "When the event was produced.",
+      "$ref": "defs.v1.json#/$defs/instant"
+    },
+    "correlation_id": {
+      "description": "Copied from the request that caused the event; ends up in every log line.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "school_id": {
+      "description": "Tenant; also the partition key.",
+      "$ref": "defs.v1.json#/$defs/uuid"
+    },
+    "data": {
+      "description": "Event payload; shape depends on `type`.",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}
