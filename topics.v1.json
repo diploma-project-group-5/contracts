@@ -1,0 +1,60 @@
+{
+  "$comment": "Topic manifest (spec §12). Single source for platform/kafka-init and for producer/consumer tests. No .retry.* topics: transient failures are retried inside the consumer (3 attempts), then the event goes to <topic>.dlq. Key = school_id everywhere.",
+  "version": "1.0",
+  "defaults": {
+    "key": "school_id",
+    "partitions": 3,
+    "replication_factor": 1,
+    "retention_ms": 604800000,
+    "dlq_retention_ms": 1209600000
+  },
+  "topics": [
+    {
+      "name": "school.registered",
+      "producer": "tenant-service",
+      "consumers": ["school-service"],
+      "schema": null,
+      "stage": 1
+    },
+    {
+      "name": "school.data.changed",
+      "producer": "school-service",
+      "consumers": ["timetable-service"],
+      "schema": null,
+      "stage": 1
+    },
+    {
+      "name": "solve.build.requested",
+      "producer": "timetable-service",
+      "consumers": ["solver"],
+      "schema": "schemas/events/solve.build.requested.v1.json",
+      "stage": 1
+    },
+    {
+      "name": "solve.substitution.requested",
+      "producer": "timetable-service",
+      "consumers": ["solver"],
+      "schema": "schemas/events/solve.substitution.requested.v1.json",
+      "stage": 2
+    },
+    {
+      "name": "solve.status",
+      "producer": "solver",
+      "consumers": ["timetable-service"],
+      "schema": "schemas/events/solve.status.v1.json",
+      "stage": 1,
+      "$comment": "solve.started and solve.completed share this topic so that the partition keeps their order per job."
+    },
+    {
+      "name": "audit.recorded",
+      "producer": "timetable-service",
+      "consumers": ["school-service"],
+      "schema": null,
+      "stage": 1
+    }
+  ],
+  "dlq": {
+    "pattern": "<topic>.dlq",
+    "$comment": "One DLQ per consumed topic. Written by the consumer of that topic after its in-consumer retries (or at once for deterministic/unparseable input). Diagnostics only: solve.* events are never replayed from the DLQ (the job watchdog has already closed the job)."
+  }
+}

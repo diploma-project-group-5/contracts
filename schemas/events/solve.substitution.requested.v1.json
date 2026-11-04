@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/events/solve.substitution.requested.v1.json",
+  "title": "solve.substitution.requested (v1) -- STAGE 2 DRAFT",
+  "description": "STAGE 2 DRAFT, NOT FOR STAGE 1. DRAFT by osovyk for review; owner TBD. timetable -> solver, one job per date of an absence (spec §06, §12). The solver does not subscribe to this topic before stage 2. Adds not_before (ADR 2026-11-04-solver-kafka-mvp, spec_changes: the engine never reads the clock). The result comes back as solve.completed; the substitution-specific result fields (step found, proposals) are still to be designed.",
+  "$comment": "Expect breaking changes before stage 2; do not implement against this yet.",
+  "allOf": [
+    { "$ref": "envelope.v1.json" },
+    {
+      "type": "object",
+      "properties": {
+        "type": { "const": "solve.substitution.requested" },
+        "data": { "$ref": "#/$defs/data" }
+      }
+    }
+  ],
+  "$defs": {
+    "data": {
+      "type": "object",
+      "required": [
+        "job_id",
+        "date",
+        "absence_dates",
+        "absent_teacher_id",
+        "lessons",
+        "not_before",
+        "iso_week",
+        "snapshot_version",
+        "time_limit_s",
+        "queue_deadline_at",
+        "school_days",
+        "lessons_per_day",
+        "staff",
+        "capacity",
+        "classes",
+        "subjects",
+        "teachers",
+        "rows",
+        "template",
+        "approved_substitutions"
+      ],
+      "properties": {
+        "job_id": { "$ref": "defs.v1.json#/$defs/uuid" },
+        "date": { "$ref": "defs.v1.json#/$defs/date" },
+        "absence_dates": {
+          "type": "array",
+          "items": { "$ref": "defs.v1.json#/$defs/date" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "absent_teacher_id": { "$ref": "defs.v1.json#/$defs/id" },
+        "lessons": {
+          "description": "Lessons of the absent teacher on `date` to cover.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["class_id", "lesson_no"],
+            "properties": {
+              "class_id": { "$ref": "defs.v1.json#/$defs/id" },
+              "lesson_no": { "$ref": "defs.v1.json#/$defs/lesson_no" }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "not_before": {
+          "description": "Step 3 moves lessons only to dates >= not_before (\"today\" in Europe/Kyiv when the job was created).",
+          "$ref": "defs.v1.json#/$defs/date"
+        },
+        "iso_week": {
+          "description": "Window boundary for step 3, e.g. 2026-W45.",
+          "type": "string",
+          "pattern": "^[0-9]{4}-W(0[1-9]|[1-4][0-9]|5[0-3])$"
+        },
+        "snapshot_version": { "type": "integer", "minimum": 0 },
+        "time_limit_s": { "type": "integer", "minimum": 1, "maximum": 3600 },
+        "queue_deadline_at": { "$ref": "defs.v1.json#/$defs/instant" },
+        "school_days": {
+          "type": "array",
+          "items": { "$ref": "defs.v1.json#/$defs/day" },
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true
+        },
+        "lessons_per_day": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "staff": { "type": "integer", "minimum": 0 },
+        "capacity": {
+          "oneOf": [
+            { "$ref": "defs.v1.json#/$defs/capacity_passport" },
+            { "$ref": "defs.v1.json#/$defs/capacity_alert" }
+          ]
+        },
+        "classes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/school_class" } },
+        "subjects": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/subject" } },
+        "teachers": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/teacher" } },
+        "rows": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/curriculum_row" } },
+        "template": {
+          "description": "Timetable in force on `date`: published main, or the alert template if an activation applies.",
+          "type": "object",
+          "required": ["timetable_id", "kind", "lessons", "day_formats"],
+          "properties": {
+            "timetable_id": { "$ref": "defs.v1.json#/$defs/uuid" },
+            "kind": { "$ref": "defs.v1.json#/$defs/kind" },
+            "lessons": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/lesson" } },
+            "day_formats": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/day_format" } }
+          },
+          "additionalProperties": false
+        },
+        "approved_substitutions": {
+          "description": "Already approved substitutions of the window.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["date", "class_id", "lesson_no", "teacher_id"],
+            "properties": {
+              "date": { "$ref": "defs.v1.json#/$defs/date" },
+              "class_id": { "$ref": "defs.v1.json#/$defs/id" },
+              "lesson_no": { "$ref": "defs.v1.json#/$defs/lesson_no" },
+              "teacher_id": { "$ref": "defs.v1.json#/$defs/id" },
+              "subject_id": { "$ref": "defs.v1.json#/$defs/id" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
