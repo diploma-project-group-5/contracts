@@ -1,0 +1,562 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/validator/validation.outcome.v1.json",
+  "title": "validator-lib outcome (v1)",
+  "description": "Result of validate(): ACCEPTED (no conflicts), REJECTED (conflicts in the timetable), INVALID_INPUT (malformed input or broken snapshot; issues carry JSON pointers, never values). load is computed for ACCEPTED and REJECTED (ADR 2026-11-09).",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "status",
+        "conflicts",
+        "conflicts_total",
+        "load",
+        "meta"
+      ],
+      "properties": {
+        "status": {
+          "const": "ACCEPTED"
+        },
+        "conflicts": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "conflicts_total": {
+          "const": 0
+        },
+        "load": {
+          "type": "object",
+          "required": [
+            "days",
+            "class_days",
+            "summary"
+          ],
+          "properties": {
+            "days": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "day",
+                  "students_in_person",
+                  "teachers_on_site",
+                  "conditions",
+                  "ok"
+                ],
+                "properties": {
+                  "day": {
+                    "$ref": "../events/defs.v1.json#/$defs/day"
+                  },
+                  "students_in_person": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "teachers_on_site": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "conditions": {
+                    "type": "object",
+                    "required": [
+                      "passport"
+                    ],
+                    "properties": {
+                      "passport": {
+                        "type": "object",
+                        "required": [
+                          "load",
+                          "limit",
+                          "ok"
+                        ],
+                        "properties": {
+                          "load": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "limit": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "ok": {
+                            "type": "boolean"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "seats": {
+                        "type": "object",
+                        "required": [
+                          "load",
+                          "limit",
+                          "ok"
+                        ],
+                        "properties": {
+                          "load": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "limit": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "ok": {
+                            "type": "boolean"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "ok": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "class_days": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "class_id",
+                  "day",
+                  "in_person",
+                  "lessons",
+                  "reason"
+                ],
+                "properties": {
+                  "class_id": {
+                    "$ref": "../events/defs.v1.json#/$defs/id"
+                  },
+                  "day": {
+                    "$ref": "../events/defs.v1.json#/$defs/day"
+                  },
+                  "in_person": {
+                    "type": "boolean"
+                  },
+                  "lessons": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "reason": {
+                    "enum": [
+                      "no_lessons",
+                      "no_shelter",
+                      "day_limit",
+                      "priority",
+                      "capacity_available"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "summary": {
+              "type": "object",
+              "required": [
+                "remote_class_days",
+                "peak",
+                "classes_without_in_person_days"
+              ],
+              "properties": {
+                "remote_class_days": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "peak": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "condition",
+                      "day",
+                      "load",
+                      "limit"
+                    ],
+                    "properties": {
+                      "condition": {
+                        "enum": [
+                          "seats",
+                          "passport"
+                        ]
+                      },
+                      "day": {
+                        "$ref": "../events/defs.v1.json#/$defs/day"
+                      },
+                      "load": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "classes_without_in_person_days": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "../events/defs.v1.json#/$defs/id"
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "meta": {
+          "type": "object",
+          "required": [
+            "validator_version",
+            "contracts_version",
+            "model"
+          ],
+          "properties": {
+            "validator_version": {
+              "type": "string"
+            },
+            "contracts_version": {
+              "type": "string"
+            },
+            "model": {
+              "oneOf": [
+                {
+                  "$ref": "../events/defs.v1.json#/$defs/model"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "status",
+        "conflicts",
+        "conflicts_total",
+        "load",
+        "meta"
+      ],
+      "properties": {
+        "status": {
+          "const": "REJECTED"
+        },
+        "conflicts": {
+          "type": "array",
+          "items": {
+            "$ref": "../events/conflict.v1.json"
+          }
+        },
+        "conflicts_total": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "load": {
+          "type": "object",
+          "required": [
+            "days",
+            "class_days",
+            "summary"
+          ],
+          "properties": {
+            "days": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "day",
+                  "students_in_person",
+                  "teachers_on_site",
+                  "conditions",
+                  "ok"
+                ],
+                "properties": {
+                  "day": {
+                    "$ref": "../events/defs.v1.json#/$defs/day"
+                  },
+                  "students_in_person": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "teachers_on_site": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "conditions": {
+                    "type": "object",
+                    "required": [
+                      "passport"
+                    ],
+                    "properties": {
+                      "passport": {
+                        "type": "object",
+                        "required": [
+                          "load",
+                          "limit",
+                          "ok"
+                        ],
+                        "properties": {
+                          "load": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "limit": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "ok": {
+                            "type": "boolean"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "seats": {
+                        "type": "object",
+                        "required": [
+                          "load",
+                          "limit",
+                          "ok"
+                        ],
+                        "properties": {
+                          "load": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "limit": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "ok": {
+                            "type": "boolean"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "ok": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "class_days": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "class_id",
+                  "day",
+                  "in_person",
+                  "lessons",
+                  "reason"
+                ],
+                "properties": {
+                  "class_id": {
+                    "$ref": "../events/defs.v1.json#/$defs/id"
+                  },
+                  "day": {
+                    "$ref": "../events/defs.v1.json#/$defs/day"
+                  },
+                  "in_person": {
+                    "type": "boolean"
+                  },
+                  "lessons": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "reason": {
+                    "enum": [
+                      "no_lessons",
+                      "no_shelter",
+                      "day_limit",
+                      "priority",
+                      "capacity_available"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "summary": {
+              "type": "object",
+              "required": [
+                "remote_class_days",
+                "peak",
+                "classes_without_in_person_days"
+              ],
+              "properties": {
+                "remote_class_days": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "peak": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "condition",
+                      "day",
+                      "load",
+                      "limit"
+                    ],
+                    "properties": {
+                      "condition": {
+                        "enum": [
+                          "seats",
+                          "passport"
+                        ]
+                      },
+                      "day": {
+                        "$ref": "../events/defs.v1.json#/$defs/day"
+                      },
+                      "load": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "limit": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "classes_without_in_person_days": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "../events/defs.v1.json#/$defs/id"
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "meta": {
+          "type": "object",
+          "required": [
+            "validator_version",
+            "contracts_version",
+            "model"
+          ],
+          "properties": {
+            "validator_version": {
+              "type": "string"
+            },
+            "contracts_version": {
+              "type": "string"
+            },
+            "model": {
+              "oneOf": [
+                {
+                  "$ref": "../events/defs.v1.json#/$defs/model"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "status",
+        "issues",
+        "meta"
+      ],
+      "properties": {
+        "status": {
+          "const": "INVALID_INPUT"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "part",
+              "code",
+              "path"
+            ],
+            "properties": {
+              "part": {
+                "enum": [
+                  "input",
+                  "snapshot",
+                  "timetable"
+                ]
+              },
+              "code": {
+                "enum": [
+                  "schema",
+                  "limit",
+                  "duplicate_id",
+                  "unknown_reference",
+                  "duplicate_row",
+                  "kind_capacity_mismatch",
+                  "unsupported_version"
+                ]
+              },
+              "path": {
+                "type": "string",
+                "description": "JSON pointer; never an input value."
+              },
+              "keyword": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "maxItems": 20
+        },
+        "meta": {
+          "type": "object",
+          "required": [
+            "validator_version",
+            "contracts_version",
+            "model"
+          ],
+          "properties": {
+            "validator_version": {
+              "type": "string"
+            },
+            "contracts_version": {
+              "type": "string"
+            },
+            "model": {
+              "oneOf": [
+                {
+                  "$ref": "../events/defs.v1.json#/$defs/model"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}
