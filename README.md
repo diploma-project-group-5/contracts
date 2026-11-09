@@ -71,7 +71,8 @@ topics.v1.json                          маніфест топіків: про�
 4. **Детерміновані помилки.** Вони не повторюються: `solve.completed{MODEL_INVALID, error.code ∈
    {invalid_payload, unsupported_schema_version, result_too_large, internal}}`. Нового статусу немає.
    Поле `error` дозволене лише з `MODEL_INVALID`.
-5. **Ліміт часу.** `time_limit_s` — це вся обробка в solver; solver обрізає значення до [10, 180] с.
+5. **Ліміт часу.** `time_limit_s` — верхня межа всієї обробки в solver; solver обрізає значення до [10, 180] с
+   і може завершити раніше, коли ціль перестала покращуватись (`stats.stop_reason = no_improvement`).
    `queue_deadline_at` ≥ створення + 10 хв. Після нього solver відповідає `EXPIRED` без `solve.started`.
 6. **Етап 2.** У чернетку `solve.substitution.requested` додано `not_before` (дата Europe/Kyiv).
 

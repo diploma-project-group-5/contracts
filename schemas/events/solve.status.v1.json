@@ -100,7 +100,10 @@
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
         },
-        "stop_reason": { "enum": ["completed", "time_limit", "stopped", "precheck"] },
+        "stop_reason": {
+          "description": "Why the search ended. no_improvement: phase A stopped early because the objective stopped improving (status stays FEASIBLE); timetable treats it like time_limit.",
+          "enum": ["completed", "time_limit", "stopped", "precheck", "no_improvement"]
+        },
         "quality_relaxed": {
           "description": "true = the per-day row cap was dropped to find a solution (ADR quality ladder).",
           "type": "boolean"

@@ -42,7 +42,7 @@
           "minimum": 0
         },
         "time_limit_s": {
-          "description": "Whole processing budget inside the solver. timetable defaults: 60 s for builds. The solver clamps it to [SOLVER_MIN_TIME_LIMIT_S=10, SOLVER_MAX_TIME_LIMIT_S=180].",
+          "description": "Upper bound of the whole processing inside the solver; the solver may finish earlier when the objective stops improving. timetable defaults: 60 s for builds. The solver clamps it to [SOLVER_MIN_TIME_LIMIT_S=10, SOLVER_MAX_TIME_LIMIT_S=180].",
           "type": "integer",
           "minimum": 1,
           "maximum": 3600
