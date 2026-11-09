@@ -513,7 +513,11 @@
                   "unknown_reference",
                   "duplicate_row",
                   "kind_capacity_mismatch",
-                  "unsupported_version"
+                  "unsupported_version",
+                  "requires_absences",
+                  "requires_holidays",
+                  "not_held_day",
+                  "duplicate_slot"
                 ]
               },
               "path": {
