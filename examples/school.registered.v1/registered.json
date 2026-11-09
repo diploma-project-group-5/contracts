@@ -1,0 +1,14 @@
+{
+  "event_id": "7f3c2a10-5b8e-4d6f-9a21-3c4e5f607182",
+  "type": "school.registered",
+  "schema_version": "1.0",
+  "source": "tenant-service",
+  "time": "2026-11-05T21:11:56.003Z",
+  "correlation_id": "c1f817a1-19a7-4b20-a6de-66c75caf0a5a",
+  "school_id": "2de92d4e-f5f2-49cd-b9e2-c4399049b735",
+  "data": {
+    "school_id": "2de92d4e-f5f2-49cd-b9e2-c4399049b735",
+    "name": "Ліцей №1",
+    "registered_at": "2026-11-05T21:11:56.003Z"
+  }
+}

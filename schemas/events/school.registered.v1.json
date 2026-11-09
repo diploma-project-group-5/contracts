@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/events/school.registered.v1.json",
+  "title": "school.registered (v1)",
+  "description": "tenant -> school, topic school.registered, key school_id. Written to the tenant outbox in the same transaction as the registry row (spec §06, «Реєстрація й перший вхід»); school-service creates an empty school profile and an audit entry «заклад зареєстровано». No personal data: the scheduler's login and temporary password never leave tenant-service.",
+  "allOf": [{ "$ref": "envelope.v1.json" }],
+  "type": "object",
+  "properties": {
+    "type": { "const": "school.registered" },
+    "source": { "const": "tenant-service" },
+    "data": { "$ref": "#/$defs/registered" }
+  },
+  "$defs": {
+    "registered": {
+      "type": "object",
+      "required": ["school_id", "name", "registered_at"],
+      "properties": {
+        "school_id": {
+          "description": "Same value as the envelope school_id (the partition key).",
+          "$ref": "defs.v1.json#/$defs/uuid"
+        },
+        "name": {
+          "description": "School name as registered by the sysadmin, trimmed. school-service shows it in the profile and does not let the scheduler change it.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "registered_at": {
+          "description": "When the school was registered; equals the envelope time.",
+          "$ref": "defs.v1.json#/$defs/instant"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

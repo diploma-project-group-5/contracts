@@ -13,6 +13,7 @@ schemas/events/
                                         correlation_id, school_id, data
   conflict.v1.json                      форма конфлікту {rule, class_id?, teacher_id?, subject_id?,
                                         day?, condition?, hint?} з enum rule
+  school.registered.v1.json             tenant → school (етап 1)
   solve.build.requested.v1.json         timetable → solver (етап 1)
   solve.status.v1.json                  solver → timetable: oneOf solve.started | solve.completed
                                         за полем конверта `type`
@@ -78,6 +79,11 @@ topics.v1.json                          маніфест топіків: про�
 
 ## Хто як використовує
 
+- **tenant-service** (TS, власник Viacheslav) пише `school.registered` в outbox однією транзакцією
+  із записом закладу; relay відправляє подію в однойменний топік з ключем `school_id`. У `data` лише
+  `school_id`, назва й час реєстрації: логін і тимчасовий пароль укладача з tenant-service не виходять.
+- **school-service** (TS) споживає `school.registered` (inbox за `event_id`) і створює порожній профіль
+  закладу з цією назвою й запис журналу «заклад зареєстровано».
 - **solver** (Python, власник osovyk) читає `solve.build.requested` і пише `solve.status`.
   Поки пакета pip немає, pydantic-моделі в `solver/src/lad_solver/adapters/kafka/payload.py` написано
   вручну за цими схемами. Тест `solver/tests/adapters/test_contracts.py` перевіряє вихідні події й
