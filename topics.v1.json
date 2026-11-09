@@ -13,7 +13,7 @@
       "name": "school.registered",
       "producer": "tenant-service",
       "consumers": ["school-service"],
-      "schema": null,
+      "schema": "schemas/events/school.registered.v1.json",
       "stage": 1
     },
     {
