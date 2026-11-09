@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://lad.example/contracts/schemas/validator/validation.input.v1.json",
   "title": "validator-lib input (v1)",
-  "description": "A finished timetable and the id-only school snapshot it is checked against (ADR 2026-11-09-validator-lib-design). snapshot = solve.build.requested data without job fields; timetable = solve.completed lessons and day_formats. No personal data: ids only.",
+  "description": "A finished timetable and the id-only school snapshot it is checked against (ADR 2026-11-09-validator-lib-design). snapshot = solve.build.requested data without job fields; timetable = solve.completed lessons and day_formats. No personal data: ids only. Stage 2 (ADR 2026-11-09-validator-lib-substitution-check): an effective week with substitutions may mark lessons with origin, list lessons not held (self_study, cancelled, holiday) and the absences of the week; all optional, so a stage-1 input is unchanged.",
   "type": "object",
   "required": [
     "schema_version",
@@ -140,7 +140,7 @@
         "lessons": {
           "type": "array",
           "items": {
-            "$ref": "../events/defs.v1.json#/$defs/lesson"
+            "$ref": "#/$defs/week_lesson"
           },
           "maxItems": 12000
         },
@@ -150,10 +150,130 @@
             "$ref": "../events/defs.v1.json#/$defs/day_format"
           },
           "maxItems": 1200
+        },
+        "not_held": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/not_held"
+          },
+          "maxItems": 12000
+        }
+      },
+      "additionalProperties": false
+    },
+    "absences": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/absence"
+      },
+      "maxItems": 3000
+    },
+    "holidays": {
+      "description": "Weekdays of the checked week that are holidays: absent from snapshot.school_days; template lessons of these days come as not_held kind=holiday.",
+      "type": "array",
+      "items": {
+        "$ref": "../events/defs.v1.json#/$defs/day"
+      },
+      "maxItems": 6,
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "week_lesson": {
+      "description": "A lesson of the checked week. origin=substitution marks a substitute teacher (exempt from teacher_not_in_plan, spec §04 'не за фахом'); a moved lesson keeps origin=plan.",
+      "type": "object",
+      "required": [
+        "class_id",
+        "day",
+        "lesson_no",
+        "subject_id",
+        "teacher_id"
+      ],
+      "properties": {
+        "class_id": {
+          "$ref": "../events/defs.v1.json#/$defs/id"
+        },
+        "day": {
+          "$ref": "../events/defs.v1.json#/$defs/day"
+        },
+        "lesson_no": {
+          "$ref": "../events/defs.v1.json#/$defs/lesson_no"
+        },
+        "subject_id": {
+          "$ref": "../events/defs.v1.json#/$defs/id"
+        },
+        "teacher_id": {
+          "$ref": "../events/defs.v1.json#/$defs/id"
+        },
+        "origin": {
+          "enum": [
+            "plan",
+            "substitution"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "not_held": {
+      "description": "A template lesson that is not held this week. self_study keeps the class slot occupied; cancelled and holiday free it. All kinds count towards plan hours.",
+      "type": "object",
+      "required": [
+        "class_id",
+        "day",
+        "lesson_no",
+        "subject_id",
+        "kind"
+      ],
+      "properties": {
+        "class_id": {
+          "$ref": "../events/defs.v1.json#/$defs/id"
+        },
+        "day": {
+          "$ref": "../events/defs.v1.json#/$defs/day"
+        },
+        "lesson_no": {
+          "$ref": "../events/defs.v1.json#/$defs/lesson_no"
+        },
+        "subject_id": {
+          "$ref": "../events/defs.v1.json#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "self_study",
+            "cancelled",
+            "holiday"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "absence": {
+      "description": "A teacher absent on these lessons of a weekday of the checked week (partial absences are per lesson). A substitute lesson or a self_study / cancelled slot requires the plan teacher of that class and subject to be absent in exactly that slot.",
+      "type": "object",
+      "required": [
+        "teacher_id",
+        "day",
+        "lesson_nos"
+      ],
+      "properties": {
+        "teacher_id": {
+          "$ref": "../events/defs.v1.json#/$defs/id"
+        },
+        "day": {
+          "$ref": "../events/defs.v1.json#/$defs/day"
+        },
+        "lesson_nos": {
+          "type": "array",
+          "items": {
+            "$ref": "../events/defs.v1.json#/$defs/lesson_no"
+          },
+          "minItems": 1,
+          "maxItems": 10,
+          "uniqueItems": true
         }
       },
       "additionalProperties": false
     }
-  },
-  "additionalProperties": false
+  }
 }

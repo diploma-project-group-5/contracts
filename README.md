@@ -120,3 +120,32 @@ topics.v1.json                          маніфест топіків: про�
 - окремо є пара 1.1 проти 1.2 на тому самому дні.
 
 Вектори в solver і validator-lib мають давати однаковий вердикт.
+
+## Вектори замін (етап 2, contracts 0.3.0)
+
+`vectors/substitution/*.json` — спільна істина для `validator-lib` (вердикт) і `timetable-service` (функція
+`effectiveWeek`, яка збирає тиждень із накладками). ADR `2026-11-09-validator-lib-substitution-check`.
+
+```json
+{
+  "description": "…",
+  "given": {
+    "snapshot": {…}, "template": {"lessons": […], "day_formats": […]},
+    "holidays": [3], "absences": [{"teacher_id", "day", "lesson_nos"}],
+    "overlays": [{"day", "class_id", "lesson_no", "kind": "teacher|moved|self_study|cancelled",
+                  "new_teacher_id"?, "moved_to"?: {"day", "lesson_no"}}]
+  },
+  "input": { /* validation.input.v1: тиждень, який має зібрати effectiveWeek(given) */ },
+  "expected": {"status": "ACCEPTED|REJECTED", "conflicts": […]} | {"status": "INVALID_INPUT", "issue_codes": […]}
+}
+```
+
+- Дні — дні тижня 1..6 (вектори без дат); `timetable` перетворює дату на день тижня в межах одного ISO-тижня.
+- Свята спершу прибирають уроки шаблону (`not_held{kind: "holiday"}`) і день із `school_days`, потім застосовуються накладки.
+- Вектори без `given` — помилки складання тижня чи входу: їх ловить лише бібліотека.
+- Генератор: `node scripts/gen-substitution-vectors.mjs vectors/substitution` (вердикти в ньому записано вручну; після змін — переглянути diff векторів).
+- `vectors/substitution-approve/*.json`: `{description, baseline, effective, expected: {added}}` для `newConflicts` на
+  `:approve` (що заміна додала чи погіршила; полегшення наявного конфлікту — не нове).
+- `validation.input.v1` у 0.3.0: `lessons[].origin`, `timetable.not_held[]`, `absences[]`, `holidays[]` (усі
+  необов'язкові); `validation.outcome.v1`: коди issue `requires_absences`, `requires_holidays`, `not_held_day`,
+  `duplicate_slot`.

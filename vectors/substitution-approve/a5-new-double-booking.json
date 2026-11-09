@@ -1,0 +1,523 @@
+{
+  "description": "A stale week plus a substitute who is busy in that slot: only the double booking is new",
+  "baseline": {
+    "schema_version": "1.0",
+    "snapshot": {
+      "kind": "main",
+      "school_days": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "lessons_per_day": 6,
+      "staff": 2,
+      "capacity": {
+        "passport": 60
+      },
+      "classes": [
+        {
+          "id": "c-1",
+          "students": 20,
+          "priority": true
+        },
+        {
+          "id": "c-2",
+          "students": 20,
+          "priority": false
+        }
+      ],
+      "subjects": [
+        {
+          "id": "s-math",
+          "priority_area": true,
+          "no_shelter": false
+        },
+        {
+          "id": "s-ukr",
+          "priority_area": false,
+          "no_shelter": false
+        },
+        {
+          "id": "s-pe",
+          "priority_area": false,
+          "no_shelter": true
+        }
+      ],
+      "teachers": [
+        {
+          "id": "t-1",
+          "weekly_limit": 10,
+          "unavailable_days": []
+        },
+        {
+          "id": "t-2",
+          "weekly_limit": 10,
+          "unavailable_days": []
+        },
+        {
+          "id": "t-3",
+          "weekly_limit": 4,
+          "unavailable_days": [
+            2
+          ]
+        },
+        {
+          "id": "t-4",
+          "weekly_limit": 2,
+          "unavailable_days": []
+        }
+      ],
+      "rows": [
+        {
+          "class_id": "c-1",
+          "subject_id": "s-math",
+          "teacher_id": "t-1",
+          "hours": 3
+        },
+        {
+          "class_id": "c-1",
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2",
+          "hours": 3
+        },
+        {
+          "class_id": "c-2",
+          "subject_id": "s-math",
+          "teacher_id": "t-1",
+          "hours": 3
+        },
+        {
+          "class_id": "c-2",
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2",
+          "hours": 3
+        },
+        {
+          "class_id": "c-2",
+          "subject_id": "s-pe",
+          "teacher_id": "t-3",
+          "hours": 2
+        }
+      ]
+    },
+    "timetable": {
+      "lessons": [
+        {
+          "class_id": "c-1",
+          "day": 1,
+          "lesson_no": 1,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-1",
+          "day": 1,
+          "lesson_no": 2,
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2"
+        },
+        {
+          "class_id": "c-1",
+          "day": 2,
+          "lesson_no": 1,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-1",
+          "day": 2,
+          "lesson_no": 2,
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2"
+        },
+        {
+          "class_id": "c-1",
+          "day": 3,
+          "lesson_no": 1,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-1",
+          "day": 4,
+          "lesson_no": 2,
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2"
+        },
+        {
+          "class_id": "c-2",
+          "day": 1,
+          "lesson_no": 3,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-2",
+          "day": 1,
+          "lesson_no": 4,
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2"
+        },
+        {
+          "class_id": "c-2",
+          "day": 2,
+          "lesson_no": 2,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-2",
+          "day": 3,
+          "lesson_no": 3,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-2",
+          "day": 3,
+          "lesson_no": 4,
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2"
+        },
+        {
+          "class_id": "c-2",
+          "day": 4,
+          "lesson_no": 1,
+          "subject_id": "s-pe",
+          "teacher_id": "t-3"
+        },
+        {
+          "class_id": "c-2",
+          "day": 4,
+          "lesson_no": 2,
+          "subject_id": "s-pe",
+          "teacher_id": "t-3"
+        }
+      ],
+      "day_formats": [
+        {
+          "class_id": "c-1",
+          "day": 1,
+          "in_person": true
+        },
+        {
+          "class_id": "c-1",
+          "day": 2,
+          "in_person": true
+        },
+        {
+          "class_id": "c-1",
+          "day": 3,
+          "in_person": true
+        },
+        {
+          "class_id": "c-1",
+          "day": 4,
+          "in_person": false
+        },
+        {
+          "class_id": "c-1",
+          "day": 5,
+          "in_person": false
+        },
+        {
+          "class_id": "c-2",
+          "day": 1,
+          "in_person": true
+        },
+        {
+          "class_id": "c-2",
+          "day": 2,
+          "in_person": true
+        },
+        {
+          "class_id": "c-2",
+          "day": 3,
+          "in_person": true
+        },
+        {
+          "class_id": "c-2",
+          "day": 4,
+          "in_person": true
+        },
+        {
+          "class_id": "c-2",
+          "day": 5,
+          "in_person": false
+        }
+      ]
+    }
+  },
+  "effective": {
+    "schema_version": "1.0",
+    "snapshot": {
+      "kind": "main",
+      "school_days": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "lessons_per_day": 6,
+      "staff": 2,
+      "capacity": {
+        "passport": 60
+      },
+      "classes": [
+        {
+          "id": "c-1",
+          "students": 20,
+          "priority": true
+        },
+        {
+          "id": "c-2",
+          "students": 20,
+          "priority": false
+        }
+      ],
+      "subjects": [
+        {
+          "id": "s-math",
+          "priority_area": true,
+          "no_shelter": false
+        },
+        {
+          "id": "s-ukr",
+          "priority_area": false,
+          "no_shelter": false
+        },
+        {
+          "id": "s-pe",
+          "priority_area": false,
+          "no_shelter": true
+        }
+      ],
+      "teachers": [
+        {
+          "id": "t-1",
+          "weekly_limit": 10,
+          "unavailable_days": []
+        },
+        {
+          "id": "t-2",
+          "weekly_limit": 10,
+          "unavailable_days": []
+        },
+        {
+          "id": "t-3",
+          "weekly_limit": 4,
+          "unavailable_days": [
+            2
+          ]
+        },
+        {
+          "id": "t-4",
+          "weekly_limit": 2,
+          "unavailable_days": []
+        }
+      ],
+      "rows": [
+        {
+          "class_id": "c-1",
+          "subject_id": "s-math",
+          "teacher_id": "t-1",
+          "hours": 3
+        },
+        {
+          "class_id": "c-1",
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2",
+          "hours": 3
+        },
+        {
+          "class_id": "c-2",
+          "subject_id": "s-math",
+          "teacher_id": "t-1",
+          "hours": 3
+        },
+        {
+          "class_id": "c-2",
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2",
+          "hours": 3
+        },
+        {
+          "class_id": "c-2",
+          "subject_id": "s-pe",
+          "teacher_id": "t-3",
+          "hours": 2
+        }
+      ]
+    },
+    "timetable": {
+      "lessons": [
+        {
+          "class_id": "c-1",
+          "day": 1,
+          "lesson_no": 1,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-1",
+          "day": 1,
+          "lesson_no": 2,
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2"
+        },
+        {
+          "class_id": "c-1",
+          "day": 2,
+          "lesson_no": 1,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-1",
+          "day": 2,
+          "lesson_no": 2,
+          "subject_id": "s-ukr",
+          "teacher_id": "t-1",
+          "origin": "substitution"
+        },
+        {
+          "class_id": "c-1",
+          "day": 3,
+          "lesson_no": 1,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-1",
+          "day": 4,
+          "lesson_no": 2,
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2"
+        },
+        {
+          "class_id": "c-2",
+          "day": 1,
+          "lesson_no": 3,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-2",
+          "day": 1,
+          "lesson_no": 4,
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2"
+        },
+        {
+          "class_id": "c-2",
+          "day": 2,
+          "lesson_no": 2,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-2",
+          "day": 3,
+          "lesson_no": 3,
+          "subject_id": "s-math",
+          "teacher_id": "t-1"
+        },
+        {
+          "class_id": "c-2",
+          "day": 3,
+          "lesson_no": 4,
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2"
+        },
+        {
+          "class_id": "c-2",
+          "day": 4,
+          "lesson_no": 1,
+          "subject_id": "s-pe",
+          "teacher_id": "t-3"
+        },
+        {
+          "class_id": "c-2",
+          "day": 4,
+          "lesson_no": 2,
+          "subject_id": "s-pe",
+          "teacher_id": "t-3"
+        }
+      ],
+      "day_formats": [
+        {
+          "class_id": "c-1",
+          "day": 1,
+          "in_person": true
+        },
+        {
+          "class_id": "c-1",
+          "day": 2,
+          "in_person": true
+        },
+        {
+          "class_id": "c-1",
+          "day": 3,
+          "in_person": true
+        },
+        {
+          "class_id": "c-1",
+          "day": 4,
+          "in_person": false
+        },
+        {
+          "class_id": "c-1",
+          "day": 5,
+          "in_person": false
+        },
+        {
+          "class_id": "c-2",
+          "day": 1,
+          "in_person": true
+        },
+        {
+          "class_id": "c-2",
+          "day": 2,
+          "in_person": true
+        },
+        {
+          "class_id": "c-2",
+          "day": 3,
+          "in_person": true
+        },
+        {
+          "class_id": "c-2",
+          "day": 4,
+          "in_person": true
+        },
+        {
+          "class_id": "c-2",
+          "day": 5,
+          "in_person": false
+        }
+      ]
+    },
+    "absences": [
+      {
+        "teacher_id": "t-2",
+        "day": 2,
+        "lesson_nos": [
+          2
+        ]
+      }
+    ]
+  },
+  "expected": {
+    "added": [
+      {
+        "rule": "teacher_double_booked",
+        "teacher_id": "t-1",
+        "day": 2,
+        "lesson_no": 2
+      }
+    ]
+  }
+}
