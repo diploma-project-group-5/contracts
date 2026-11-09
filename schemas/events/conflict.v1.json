@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/events/conflict.v1.json",
+  "title": "Timetable conflict (v1)",
+  "description": "DRAFT by osovyk for review; owner TBD. One shared conflict shape for solver (solve.completed) and validator-lib (problem+json conflicts[]), ADR 2026-11-04-solver-kafka-mvp §2. The rule vocabulary below is the solver's; validator-lib codes were added in contracts 0.2.0 (ADR 2026-11-09-validator-lib-design). Optional fields locate the conflict; the UI resolves ids to labels (teacher signatures only in the scheduler's cabinet).",
+  "type": "object",
+  "required": [
+    "rule"
+  ],
+  "properties": {
+    "rule": {
+      "description": "staff_over_passport: non-teaching staff alone exceed the passport (condition=passport). Zero seats in 1.2 are valid (every class remote); negative limits are invalid_input. class_hours_exceed_slots: a class has more weekly hours than lessons_per_day x school days. teacher_weekly_limit: assigned hours exceed the teacher's weekly limit. teacher_hours_exceed_available_slots: hours exceed lessons_per_day x available days. teacher_unavailable_all_days: the teacher has hours but no available day. row_day_cap: a curriculum row cannot fit the per-day cap on available days. alert_bells: alert bells give no usable lessons (model 1.2). packing: CP-SAT proved infeasibility after the pre-checks passed. invalid_input: the request was rejected as invalid (see error.code). validator-lib codes (checks a finished timetable, ADR 2026-11-09): class_not_active / subject_not_active / teacher_not_active: the timetable references an id absent from the active snapshot; day_not_school_day; lesson_no_out_of_range (limit=lessons_per_day); day_format_missing / day_format_duplicate (class x school day); in_person_without_lessons; class_double_booked / teacher_double_booked (day, lesson_no); teacher_mixed_format: the teacher has lessons in in-person and remote class days on the same day; teacher_unavailable_day; teacher_weekly_limit (value=lessons, limit); lesson_not_in_plan; teacher_not_in_plan; plan_hours_mismatch (value=lessons, limit=hours); capacity_exceeded (day, condition, value=load, limit); no_shelter_in_person (model 1.2 only).",
+      "enum": [
+        "staff_over_passport",
+        "class_hours_exceed_slots",
+        "teacher_weekly_limit",
+        "teacher_hours_exceed_available_slots",
+        "teacher_unavailable_all_days",
+        "row_day_cap",
+        "alert_bells",
+        "packing",
+        "invalid_input",
+        "class_not_active",
+        "subject_not_active",
+        "teacher_not_active",
+        "day_not_school_day",
+        "lesson_no_out_of_range",
+        "day_format_missing",
+        "day_format_duplicate",
+        "in_person_without_lessons",
+        "class_double_booked",
+        "teacher_double_booked",
+        "teacher_mixed_format",
+        "teacher_unavailable_day",
+        "lesson_not_in_plan",
+        "teacher_not_in_plan",
+        "plan_hours_mismatch",
+        "capacity_exceeded",
+        "no_shelter_in_person"
+      ]
+    },
+    "class_id": {
+      "$ref": "defs.v1.json#/$defs/id"
+    },
+    "teacher_id": {
+      "$ref": "defs.v1.json#/$defs/id"
+    },
+    "subject_id": {
+      "$ref": "defs.v1.json#/$defs/id"
+    },
+    "day": {
+      "$ref": "defs.v1.json#/$defs/day"
+    },
+    "condition": {
+      "description": "Which capacity condition is violated: seats (model 1.2 only) or passport.",
+      "enum": [
+        "seats",
+        "passport"
+      ]
+    },
+    "lesson_no": {
+      "$ref": "defs.v1.json#/$defs/lesson_no"
+    },
+    "value": {
+      "description": "Observed quantity (load, lessons) for rules with a limit.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "limit": {
+      "description": "The limit the value was compared with.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "hint": {
+      "description": "true = heuristic suggestion (e.g. the busiest teachers for `packing`), not a proof.",
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/events/solve.build.requested.v1.json",
+  "title": "solve.build.requested (v1)",
+  "description": "DRAFT by osovyk for review; owner TBD. timetable -> solver, topic solve.build.requested, key school_id. Self-contained: the solver has no database. The snapshot is an id-only projection: no class names, no teacher signatures (ADR 2026-11-04-solver-kafka-mvp, spec §04 'minimum PD').",
+  "allOf": [
+    { "$ref": "envelope.v1.json" },
+    {
+      "type": "object",
+      "properties": {
+        "type": { "const": "solve.build.requested" },
+        "data": { "$ref": "#/$defs/data" }
+      }
+    }
+  ],
+  "$defs": {
+    "data": {
+      "type": "object",
+      "required": [
+        "job_id",
+        "kind",
+        "model",
+        "snapshot_version",
+        "time_limit_s",
+        "queue_deadline_at",
+        "school_days",
+        "lessons_per_day",
+        "staff",
+        "capacity",
+        "classes",
+        "subjects",
+        "teachers",
+        "rows"
+      ],
+      "properties": {
+        "job_id": { "$ref": "defs.v1.json#/$defs/uuid" },
+        "kind": { "$ref": "defs.v1.json#/$defs/kind" },
+        "model": { "$ref": "defs.v1.json#/$defs/model" },
+        "snapshot_version": {
+          "description": "school snapshot version the request was built from (bigint).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "time_limit_s": {
+          "description": "Upper bound of the whole processing inside the solver; the solver may finish earlier when the objective stops improving. timetable defaults: 60 s for builds. The solver clamps it to [SOLVER_MIN_TIME_LIMIT_S=10, SOLVER_MAX_TIME_LIMIT_S=180].",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        },
+        "queue_deadline_at": {
+          "description": "Job creation + queue allowance (>= 10 min). Past it the solver skips the job with status EXPIRED and no solve.started.",
+          "$ref": "defs.v1.json#/$defs/instant"
+        },
+        "school_days": {
+          "description": "School days of the week, ascending. For kind=alert the days of the alert bells.",
+          "type": "array",
+          "items": { "$ref": "defs.v1.json#/$defs/day" },
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true
+        },
+        "lessons_per_day": {
+          "description": "L. For kind=alert timetable derives it from the alert bells (L_alert <= L_main).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "staff": {
+          "description": "Non-teaching staff in the building (a number, no people).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "capacity": {
+          "description": "kind=main: {passport}; kind=alert: {seats, passport}.",
+          "oneOf": [
+            { "$ref": "defs.v1.json#/$defs/capacity_passport" },
+            { "$ref": "defs.v1.json#/$defs/capacity_alert" }
+          ]
+        },
+        "classes": {
+          "type": "array",
+          "items": { "$ref": "defs.v1.json#/$defs/school_class" },
+          "maxItems": 200
+        },
+        "subjects": {
+          "type": "array",
+          "items": { "$ref": "defs.v1.json#/$defs/subject" },
+          "maxItems": 500
+        },
+        "teachers": {
+          "type": "array",
+          "items": { "$ref": "defs.v1.json#/$defs/teacher" },
+          "maxItems": 500
+        },
+        "rows": {
+          "description": "Curriculum: every id must reference an entry above (checked by the solver -> MODEL_INVALID invalid_payload).",
+          "type": "array",
+          "items": { "$ref": "defs.v1.json#/$defs/curriculum_row" },
+          "maxItems": 5000
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "main" } }, "required": ["kind"] },
+          "then": {
+            "properties": {
+              "model": { "const": "1.1" },
+              "capacity": { "$ref": "defs.v1.json#/$defs/capacity_passport" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "alert" } }, "required": ["kind"] },
+          "then": {
+            "properties": {
+              "model": { "const": "1.2" },
+              "capacity": { "$ref": "defs.v1.json#/$defs/capacity_alert" }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

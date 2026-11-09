@@ -1,0 +1,50 @@
+{
+  "description": "1.2: seats 54 < 55 students -> only `seats` violated; passport passes",
+  "model": "1.2",
+  "staff": 5,
+  "capacity": {
+    "seats": 54,
+    "passport": 62
+  },
+  "day": {
+    "classes": [
+      {
+        "id": "c-1",
+        "students": 30,
+        "in_person": true
+      },
+      {
+        "id": "c-2",
+        "students": 25,
+        "in_person": true
+      }
+    ],
+    "lessons": [
+      {
+        "class_id": "c-1",
+        "teacher_id": "t-1"
+      },
+      {
+        "class_id": "c-2",
+        "teacher_id": "t-2"
+      }
+    ]
+  },
+  "expected": {
+    "students_in_person": 55,
+    "teachers_on_site": 2,
+    "conditions": {
+      "passport": {
+        "load": 62,
+        "limit": 62,
+        "ok": true
+      },
+      "seats": {
+        "load": 55,
+        "limit": 54,
+        "ok": false
+      }
+    },
+    "ok": false
+  }
+}

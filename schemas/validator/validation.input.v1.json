@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/validator/validation.input.v1.json",
+  "title": "validator-lib input (v1)",
+  "description": "A finished timetable and the id-only school snapshot it is checked against (ADR 2026-11-09-validator-lib-design). snapshot = solve.build.requested data without job fields; timetable = solve.completed lessons and day_formats. No personal data: ids only.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "snapshot",
+    "timetable"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "snapshot": {
+      "type": "object",
+      "required": [
+        "kind",
+        "school_days",
+        "lessons_per_day",
+        "staff",
+        "capacity",
+        "classes",
+        "subjects",
+        "teachers",
+        "rows"
+      ],
+      "properties": {
+        "kind": {
+          "$ref": "../events/defs.v1.json#/$defs/kind"
+        },
+        "school_days": {
+          "type": "array",
+          "items": {
+            "$ref": "../events/defs.v1.json#/$defs/day"
+          },
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true
+        },
+        "lessons_per_day": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "staff": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "capacity": {
+          "oneOf": [
+            {
+              "$ref": "../events/defs.v1.json#/$defs/capacity_passport"
+            },
+            {
+              "$ref": "../events/defs.v1.json#/$defs/capacity_alert"
+            }
+          ]
+        },
+        "classes": {
+          "type": "array",
+          "items": {
+            "$ref": "../events/defs.v1.json#/$defs/school_class"
+          },
+          "maxItems": 200
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "$ref": "../events/defs.v1.json#/$defs/subject"
+          },
+          "maxItems": 500
+        },
+        "teachers": {
+          "type": "array",
+          "items": {
+            "$ref": "../events/defs.v1.json#/$defs/teacher"
+          },
+          "maxItems": 500
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "../events/defs.v1.json#/$defs/curriculum_row"
+          },
+          "maxItems": 5000
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "main"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "capacity": {
+                "$ref": "../events/defs.v1.json#/$defs/capacity_passport"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "alert"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "capacity": {
+                "$ref": "../events/defs.v1.json#/$defs/capacity_alert"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "timetable": {
+      "type": "object",
+      "required": [
+        "lessons",
+        "day_formats"
+      ],
+      "properties": {
+        "lessons": {
+          "type": "array",
+          "items": {
+            "$ref": "../events/defs.v1.json#/$defs/lesson"
+          },
+          "maxItems": 12000
+        },
+        "day_formats": {
+          "type": "array",
+          "items": {
+            "$ref": "../events/defs.v1.json#/$defs/day_format"
+          },
+          "maxItems": 1200
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

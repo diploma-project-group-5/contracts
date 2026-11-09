@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/events/solve.status.v1.json",
+  "title": "solve.status (v1): solve.started | solve.completed",
+  "description": "DRAFT by osovyk for review; owner TBD. solver -> timetable, topic solve.status, key school_id (one topic, so the partition keeps started before completed). The envelope `type` selects the payload. timetable accepts solve.started only for a queued job and solve.completed from any non-final state.",
+  "allOf": [{ "$ref": "envelope.v1.json" }],
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "type": { "const": "solve.started" },
+        "data": { "$ref": "#/$defs/started" }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": { "const": "solve.completed" },
+        "data": { "$ref": "#/$defs/completed" }
+      }
+    }
+  ],
+  "$defs": {
+    "started": {
+      "type": "object",
+      "required": ["job_id", "started_at"],
+      "properties": {
+        "job_id": { "$ref": "defs.v1.json#/$defs/uuid" },
+        "started_at": {
+          "description": "timetable computes run_deadline_at = started_at + time limit + margin (>= 90 s).",
+          "$ref": "defs.v1.json#/$defs/instant"
+        }
+      },
+      "additionalProperties": false
+    },
+    "completed": {
+      "type": "object",
+      "required": ["job_id", "status", "lessons", "day_formats", "conflicts"],
+      "properties": {
+        "job_id": { "$ref": "defs.v1.json#/$defs/uuid" },
+        "status": {
+          "description": "OPTIMAL/FEASIBLE carry a timetable; INFEASIBLE carries conflicts; UNKNOWN = no solution within the limit; MODEL_INVALID = technical failure, never retried (error.code says why); EXPIRED = skipped because queue_deadline_at had passed. OPTIMAL is relative to the solver's model, which includes the per-row daily cap (quality rule, ADR 2026-11-04 §1): with stats.quality_relaxed=false it is optimal among timetables that respect the cap, not necessarily for the uncapped problem of spec §04; with quality_relaxed=true the cap was dropped and the model is the spec §04 problem.",
+          "enum": ["OPTIMAL", "FEASIBLE", "INFEASIBLE", "UNKNOWN", "MODEL_INVALID", "EXPIRED"]
+        },
+        "lessons": {
+          "description": "Weekly template; ids only (no teacher signatures).",
+          "type": "array",
+          "items": { "$ref": "defs.v1.json#/$defs/lesson" }
+        },
+        "day_formats": {
+          "type": "array",
+          "items": { "$ref": "defs.v1.json#/$defs/day_format" }
+        },
+        "conflicts": {
+          "type": "array",
+          "items": { "$ref": "conflict.v1.json" }
+        },
+        "error": {
+          "description": "Present only with status MODEL_INVALID.",
+          "type": "object",
+          "required": ["code"],
+          "properties": {
+            "code": {
+              "enum": ["invalid_payload", "unsupported_schema_version", "result_too_large", "internal"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "stats": { "$ref": "#/$defs/stats" }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "required": ["error"] },
+          "then": { "properties": { "status": { "const": "MODEL_INVALID" } } }
+        }
+      ]
+    },
+    "stats": {
+      "description": "Optional provenance and quality of a solve (shown in /load as build time; bench RQ1).",
+      "type": "object",
+      "properties": {
+        "objective": {
+          "description": "W * primary + secondary of the best solution found.",
+          "type": ["integer", "null"]
+        },
+        "best_bound": {
+          "description": "Proven upper bound of the objective of the solver's model; the gap is (best_bound - objective) / best_bound. With quality_relaxed=false the model includes the per-row daily cap, so this bounds capped timetables only and is not an upper bound for the uncapped spec §04 problem; with quality_relaxed=true it is.",
+          "type": ["number", "null"]
+        },
+        "primary": { "type": ["integer", "null"], "minimum": 0 },
+        "secondary": { "type": ["integer", "null"], "minimum": 0 },
+        "wall_time_ms": { "type": "integer", "minimum": 0 },
+        "num_workers": { "type": "integer", "minimum": 0 },
+        "random_seed": { "type": "integer" },
+        "solver_version": { "type": "string", "maxLength": 64 },
+        "model_version": { "type": "string", "maxLength": 64 },
+        "input_sha256": {
+          "description": "sha256 of the canonical JSON of the validated request data.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "stop_reason": {
+          "description": "Why the search ended. no_improvement: phase A stopped early because the objective stopped improving (status stays FEASIBLE); timetable treats it like time_limit.",
+          "enum": ["completed", "time_limit", "stopped", "precheck", "no_improvement"]
+        },
+        "quality_relaxed": {
+          "description": "true = the per-day row cap was dropped to find a solution (ADR quality ladder).",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

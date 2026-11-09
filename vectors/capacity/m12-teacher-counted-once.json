@@ -1,0 +1,54 @@
+{
+  "description": "1.2: t-1 with in-person lessons in both classes counts once in `passport`; teachers never count in `seats`",
+  "model": "1.2",
+  "staff": 5,
+  "capacity": {
+    "seats": 55,
+    "passport": 61
+  },
+  "day": {
+    "classes": [
+      {
+        "id": "c-1",
+        "students": 30,
+        "in_person": true
+      },
+      {
+        "id": "c-2",
+        "students": 25,
+        "in_person": true
+      }
+    ],
+    "lessons": [
+      {
+        "class_id": "c-1",
+        "teacher_id": "t-1"
+      },
+      {
+        "class_id": "c-2",
+        "teacher_id": "t-1"
+      },
+      {
+        "class_id": "c-2",
+        "teacher_id": "t-1"
+      }
+    ]
+  },
+  "expected": {
+    "students_in_person": 55,
+    "teachers_on_site": 1,
+    "conditions": {
+      "passport": {
+        "load": 61,
+        "limit": 61,
+        "ok": true
+      },
+      "seats": {
+        "load": 55,
+        "limit": 55,
+        "ok": true
+      }
+    },
+    "ok": true
+  }
+}
