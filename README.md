@@ -70,8 +70,13 @@ topics.v1.json                          маніфест топіків: про�
 3. **Форма конфлікту.** `conflict.v1.json` має один enum `rule` для solver і validator-lib.
    validator-lib додасть свої коди як MINOR.
 4. **Детерміновані помилки.** Вони не повторюються: `solve.completed{MODEL_INVALID, error.code ∈
-   {invalid_payload, unsupported_schema_version, result_too_large, internal}}`. Нового статусу немає.
-   Поле `error` дозволене лише з `MODEL_INVALID`.
+   {invalid_payload, unsupported_schema_version, result_too_large, internal, unsupported_job_type}}`.
+   Нового статусу немає. Поле `error` дозволене лише з `MODEL_INVALID`.
+   `unsupported_job_type` (0.4.0) — solver не вміє цей тип задачі. До рушія етапу 2 так він одразу
+   відповідає на кожну `solve.substitution.requested`: без `solve.started`, з порожніми `lessons`,
+   `day_formats` і `conflicts` (ADR 2026-11-15). Задача одразу стає `failed`, а не чекає сторожа.
+   `lessons` і `day_formats` мають `maxItems` 12000 і 1200: 200 класів × 6 днів × 10 уроків.
+   Більший результат solver замінює на `result_too_large`.
 5. **Ліміт часу.** `time_limit_s` — верхня межа всієї обробки в solver; solver обрізає значення до [10, 180] с
    і може завершити раніше, коли ціль перестала покращуватись (`stats.stop_reason = no_improvement`).
    `queue_deadline_at` ≥ створення + 10 хв. Після нього solver відповідає `EXPIRED` без `solve.started`.
@@ -84,7 +89,8 @@ topics.v1.json                          маніфест топіків: про�
   `school_id`, назва й час реєстрації: логін і тимчасовий пароль укладача з tenant-service не виходять.
 - **school-service** (TS) споживає `school.registered` (inbox за `event_id`) і створює порожній профіль
   закладу з цією назвою й запис журналу «заклад зареєстровано».
-- **solver** (Python, власник osovyk) читає `solve.build.requested` і пише `solve.status`.
+- **solver** (Python, власник osovyk) читає `solve.build.requested` і `solve.substitution.requested`
+  (одна група споживачів) і пише `solve.status`. Заміни до етапу 2 отримують `unsupported_job_type`.
   Поки пакета pip немає, pydantic-моделі в `solver/src/lad_solver/adapters/kafka/payload.py` написано
   вручну за цими схемами. Тест `solver/tests/adapters/test_contracts.py` перевіряє вихідні події й
   `examples/` цими схемами; каталог береться з `LAD_CONTRACTS_DIR`, за замовчуванням `../contracts`.

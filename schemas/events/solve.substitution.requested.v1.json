@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://lad.example/contracts/schemas/events/solve.substitution.requested.v1.json",
   "title": "solve.substitution.requested (v1) -- STAGE 2 DRAFT",
-  "description": "STAGE 2 DRAFT, NOT FOR STAGE 1. DRAFT by osovyk for review; owner TBD. timetable -> solver, one job per date of an absence (spec §06, §12). The solver does not subscribe to this topic before stage 2. Adds not_before (ADR 2026-11-04-solver-kafka-mvp, spec_changes: the engine never reads the clock). The result comes back as solve.completed; the substitution-specific result fields (step found, proposals) are still to be designed.",
+  "description": "STAGE 2 DRAFT, NOT FOR STAGE 1. DRAFT by osovyk for review; owner TBD. timetable -> solver, one job per date of an absence (spec §06, §12). Until the stage 2 engine the solver is subscribed to this topic but reads only the envelope and data.job_id and answers at once with solve.completed {status: MODEL_INVALID, error.code: unsupported_job_type}, without solve.started (ADR 2026-11-15). A broken message is copied to solve.substitution.requested.dlq: without school_id or data.job_id it is only copied; with them it is first answered with MODEL_INVALID (invalid_payload or unsupported_schema_version). Adds not_before (ADR 2026-11-04-solver-kafka-mvp, spec_changes: the engine never reads the clock). The result comes back as solve.completed; the substitution-specific result fields (step found, proposals) are still to be designed.",
   "$comment": "Expect breaking changes before stage 2; do not implement against this yet.",
   "allOf": [
     { "$ref": "envelope.v1.json" },
