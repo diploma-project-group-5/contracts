@@ -17,11 +17,14 @@ schemas/events/
   solve.build.requested.v1.json         timetable → solver (етап 1)
   solve.status.v1.json                  solver → timetable: oneOf solve.started | solve.completed
                                         за полем конверта `type`
-  solve.substitution.requested.v1.json  ЕТАП 2, ЧЕРНЕТКА — не реалізовувати до етапу 2
+  solve.substitution.requested.v1.json  timetable → solver (етап 2, рушій замін з 0.5.0)
 examples/<schema-stem>/*.json           приклади; кожен має проходити свою схему
 vectors/capacity/*.json                 спільні тест-вектори формули місткості (1.1 і 1.2)
 vectors/job-lifecycle/*.json            сценарії життєвого циклу задачі: послідовність подій
                                         solve.status і прогонів сторожа → очікуваний стан задачі
+vectors/substitution/*.json             тиждень із накладками → вердикт validator-lib (0.3.0)
+vectors/substitution-approve/*.json     newConflicts на :approve (0.3.0)
+vectors/substitution-solve/*.json       запит заміни → властивості відповіді рушія (0.5.0)
 topics.v1.json                          маніфест топіків: продюсер, консюмери, ключ, партиції,
                                         зберігання, DLQ; без .retry.*
 ```
@@ -57,6 +60,16 @@ topics.v1.json                          маніфест топіків: про�
 - Пакети npm і pip матимуть одну semver-версію. Сервіси закріплюють її точно (`0.3.1`, не `^0.3.1`).
 - Лише опис без зміни схеми — PATCH. Так, 0.4.1 додала опис значень `reason` у `validation.outcome.v1.json`
   (`load.class_days[].reason`): що означає кожна причина для очного й дистанційного дня.
+- **0.5.0 (MINOR, лише адитивно)** — рушій замін (ADR `2026-11-15-solver-substitution-engine`):
+  - `solve.substitution.requested`: необов'язкові `absences[]`, `non_school_dates[]`, `allow_support_moves`;
+    `approved_substitutions[]` отримує `kind` (типово `teacher`) і `moved_to`, `teacher_id` обов'язковий лише
+    для `kind=teacher`. Запит у формі 0.4.x лишається валідним;
+  - `solve.completed`: необов'язкове `data.substitution` (див. нижче); `unsupported_job_type` лишається в enum
+    для solver до 0.4.0;
+  - `defs.v1.json`: `$defs/moved_to`;
+  - вектори `vectors/substitution-solve/*` і сценарій `vectors/job-lifecycle/14-substitution-completed`.
+  Консюмери толерантні до нових полів, тож timetable на contracts 0.4.x не ламається; щоб отримати пропозиції,
+  він має оновити закріплену версію.
 
 ## Відхилення від спеки v24, які закодовано тут
 
@@ -74,15 +87,31 @@ topics.v1.json                          маніфест топіків: про�
 4. **Детерміновані помилки.** Вони не повторюються: `solve.completed{MODEL_INVALID, error.code ∈
    {invalid_payload, unsupported_schema_version, result_too_large, internal, unsupported_job_type}}`.
    Нового статусу немає. Поле `error` дозволене лише з `MODEL_INVALID`.
-   `unsupported_job_type` (0.4.0) — solver не вміє цей тип задачі. До рушія етапу 2 так він одразу
+   `unsupported_job_type` (0.4.0) — solver не вміє цей тип задачі. solver до 0.4.0 так одразу
    відповідає на кожну `solve.substitution.requested`: без `solve.started`, з порожніми `lessons`,
-   `day_formats` і `conflicts` (ADR 2026-11-15). Задача одразу стає `failed`, а не чекає сторожа.
+   `day_formats` і `conflicts` (ADR 2026-11-15-solver-substitution-unsupported). Задача одразу стає `failed`,
+   а не чекає сторожа. Значення лишається в enum і після рушія (0.5.0) — для старих solver.
    `lessons` і `day_formats` мають `maxItems` 12000 і 1200: 200 класів × 6 днів × 10 уроків.
    Більший результат solver замінює на `result_too_large`.
 5. **Ліміт часу.** `time_limit_s` — верхня межа всієї обробки в solver; solver обрізає значення до [10, 180] с
    і може завершити раніше, коли ціль перестала покращуватись (`stats.stop_reason = no_improvement`).
    `queue_deadline_at` ≥ створення + 10 хв. Після нього solver відповідає `EXPIRED` без `solve.started`.
 6. **Етап 2.** У чернетку `solve.substitution.requested` додано `not_before` (дата Europe/Kyiv).
+7. **ВІДХИЛЕННЯ ВІД v24: розділ 06 (рядки 354, 613)** — payload заміни містить `absences[]` усіх вчителів
+   тижня `{teacher_id, date, lesson_nos|null}` (0.5.0). Без них solver може запропонувати замісника, який сам
+   відсутній у цей урок (→ 409 на `:approve`), а крок 2 не знає, на яких уроках присутній сам відсутній вчитель.
+   Лише id: ні причини, ні імені (ПД не додаються). ADR `2026-11-15-solver-substitution-engine`.
+8. **ВІДХИЛЕННЯ ВІД v24: розділ 06 (рядок 613)** — payload заміни містить `non_school_dates[]` (0.5.0):
+   канікули й інші неробочі дати тижня. З них solver виводить вікно кроку 3 (дати `iso_week` ∩ `school_days`,
+   не раніше `not_before`, без неробочих) і тижневий ліміт (уроки неробочих дат не рахуються). Одне поле
+   замість пари «дати вікна + свята» — одна істина для вікна. Поля немає — крок 3 вимкнено; `[]` — неробочих
+   дат немає. `kind`/`moved_to` погоджених накладок і межа вікна — уточнення форми рядка 613, а не відхилення.
+9. **УМОВНЕ ВІДХИЛЕННЯ ВІД v24: розділ 06 (рядок 358)** — спека на кроці 2 перебудовує весь день відсутності.
+   З `allow_support_moves=false` (типово; мінімум до захисту) крок 2 переносить лише уроки відсутнього вчителя,
+   без ланцюгів перестановок чужих уроків, а слот, звільнений іншою пропозицією тієї ж задачі, заборонений
+   (вектор `substitution-solve/12-no-swap-chains-without-support-moves`). `allow_support_moves=true` повертає
+   повну перебудову, щойно timetable вміє застосовувати рядки поза `lessons`. Остаточне рішення — окремий ADR
+   у момент, коли стане ясно, чи встигають ланцюги (ADR `2026-11-15-solver-substitution-engine`).
 
 ## Хто як використовує
 
@@ -92,7 +121,9 @@ topics.v1.json                          маніфест топіків: про�
 - **school-service** (TS) споживає `school.registered` (inbox за `event_id`) і створює порожній профіль
   закладу з цією назвою й запис журналу «заклад зареєстровано».
 - **solver** (Python, власник osovyk) читає `solve.build.requested` і `solve.substitution.requested`
-  (одна група споживачів) і пише `solve.status`. Заміни до етапу 2 отримують `unsupported_job_type`.
+  (одна група споживачів) і пише `solve.status`. З 0.4.0 на заміну відповідає `solve.started` і
+  `solve.completed` з `data.substitution`; до 0.4.0 — `unsupported_job_type`. Рушій проганяє
+  `vectors/substitution-solve/*`.
   Поки пакета pip немає, pydantic-моделі в `solver/src/lad_solver/adapters/kafka/payload.py` написано
   вручну за цими схемами. Тест `solver/tests/adapters/test_contracts.py` перевіряє вихідні події й
   `examples/` цими схемами; каталог береться з `LAD_CONTRACTS_DIR`, за замовчуванням `../contracts`.
@@ -163,3 +194,35 @@ topics.v1.json                          маніфест топіків: про�
 - `validation.input.v1` у 0.3.0: `lessons[].origin`, `timetable.not_held[]`, `absences[]`, `holidays[]` (усі
   необов'язкові); `validation.outcome.v1`: коди issue `requires_absences`, `requires_holidays`, `not_held_day`,
   `duplicate_slot`.
+
+## Результат заміни (0.5.0)
+
+ADR `2026-11-15-solver-substitution-engine`. solver лише **пропонує**: тиждень із накладками збирає timetable,
+вердикт дає validator-lib (`newConflicts`), погоджує людина з реквізитами наказу.
+
+```json
+{"status": "OPTIMAL", "lessons": [], "day_formats": [], "conflicts": [],
+ "substitution": {"step": 3, "proposals": [
+  {"date": "2026-11-17", "class_id": "c-5", "lesson_no": 3, "kind": "teacher", "teacher_id": "t-12", "off_profile": true, "step": 1},
+  {"date": "2026-11-17", "class_id": "c-6", "lesson_no": 2, "kind": "moved", "moved_to": {"date": "2026-11-17", "lesson_no": 6}, "step": 2},
+  {"date": "2026-11-17", "class_id": "c-7", "lesson_no": 4, "kind": "moved", "moved_to": {"date": "2026-11-19", "lesson_no": 6}, "step": 3},
+  {"date": "2026-11-17", "class_id": "c-2", "lesson_no": 5, "kind": "self_study", "step": 3}]}}
+```
+
+- Кроки: 1 — вільний вчитель; 2 — перенос на іншу годину того ж дня; 3 — сусідні дати ISO-тижня по одній за
+  відстанню (за рівної — пізніша). Що лишилось — `self_study`; `cancelled` обирає лише людина, solver його не видає.
+- Пропозиція — один слот (`date`, `class_id`, `lesson_no`) вихідного тижня:
+  - `teacher` — `teacher_id`, `off_profile` (у замісника немає рядка плану з цим предметом, «не за фахом»);
+  - `moved` — `moved_to {date, lesson_no}`, той самий клас, предмет і вчитель;
+  - `self_study` — без вчителя.
+  Інших полів немає: предмет, вихідний вчитель і `timetable_id` виводяться із запиту. Умови — `if/then` за `kind`.
+- `step` пропозиції — крок, що її дав; для `self_study` — останній крок, що працював (3, якщо в запиті є
+  `non_school_dates`, інакше 2). `substitution.step = max(proposals[].step)`.
+- Коли є `substitution`: статус лише OPTIMAL/FEASIBLE (розв'язок є завжди), `lessons`, `day_formats`,
+  `conflicts` — `maxItems: 0`, поля `error` немає. `proposals.maxItems` 600 — статична межа.
+- **Інваріант** (його не виразити в JSON Schema; перевіряють вектори й timetable): кожен урок `lessons` запиту
+  трапляється рівно раз з `date` запиту. `moved` кроку 2 має `moved_to.date = date`; `moved` кроку 3 — іншу дату
+  всередині вікна (навчальний день `iso_week`, не раніше `not_before`, не в `non_school_dates`). Рядки поза `lessons` — лише `moved` і лише з `allow_support_moves=true`
+  (ланцюги перестановок, після захисту). Урок без пропозиції timetable має вважати помилкою (`invalid_result`),
+  а не мовчазною `self_study` (зміна (b) у плані ADR).
+- Формат векторів `substitution-solve` і спірні тлумачення (`params`) — у `vectors/substitution-solve/README.md`.

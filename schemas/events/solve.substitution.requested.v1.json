@@ -1,9 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://lad.example/contracts/schemas/events/solve.substitution.requested.v1.json",
-  "title": "solve.substitution.requested (v1) -- STAGE 2 DRAFT",
-  "description": "STAGE 2 DRAFT, NOT FOR STAGE 1. DRAFT by osovyk for review; owner TBD. timetable -> solver, one job per date of an absence (spec §06, §12). Until the stage 2 engine the solver is subscribed to this topic but reads only the envelope and data.job_id and answers at once with solve.completed {status: MODEL_INVALID, error.code: unsupported_job_type}, without solve.started (ADR 2026-11-15). A broken message is copied to solve.substitution.requested.dlq: without school_id or data.job_id it is only copied; with them it is first answered with MODEL_INVALID (invalid_payload or unsupported_schema_version). Adds not_before (ADR 2026-11-04-solver-kafka-mvp, spec_changes: the engine never reads the clock). The result comes back as solve.completed; the substitution-specific result fields (step found, proposals) are still to be designed.",
-  "$comment": "Expect breaking changes before stage 2; do not implement against this yet.",
+  "title": "solve.substitution.requested (v1) -- stage 2",
+  "description": "DRAFT by osovyk for review; owner TBD. timetable -> solver, one job per date of an absence (spec §06, §12). Stage 2 engine: ADR 2026-11-15-solver-substitution-engine (contracts 0.5.0). The solver proposes, it never decides: steps 1 (free teacher), 2 (rebuild of `date`), 3 (neighbour dates of iso_week), the rest self_study; the answer is solve.started, then solve.completed with data.substitution (see solve.status.v1.json). timetable builds the effective week and validator-lib (newConflicts) gives the verdict. Solvers before 0.4.0 read only the envelope and data.job_id and answer at once with solve.completed {status: MODEL_INVALID, error.code: unsupported_job_type}, without solve.started (ADR 2026-11-15-solver-substitution-unsupported). A broken message is copied to solve.substitution.requested.dlq: without school_id or data.job_id it is only copied; with them it is first answered with MODEL_INVALID (invalid_payload or unsupported_schema_version). not_before: ADR 2026-11-04-solver-kafka-mvp (the engine never reads the clock). absences, non_school_dates, allow_support_moves and approved_substitutions[].kind/moved_to are optional (0.5.0), so a 0.4.x producer stays valid.",
+  "$comment": "0.5.0 is additive. Two deviations from spec v24 §06 (line 613), accepted in ADR 2026-11-15-solver-substitution-engine: absences[] of all teachers of the week (ids only) and non_school_dates[].",
   "allOf": [
     { "$ref": "envelope.v1.json" },
     {
@@ -68,7 +68,7 @@
           "$ref": "defs.v1.json#/$defs/date"
         },
         "iso_week": {
-          "description": "Window boundary for step 3, e.g. 2026-W45.",
+          "description": "Window boundary for step 3, e.g. 2026-W45. The step 3 window is the dates of this ISO week that are school_days, >= not_before, not in non_school_dates, minus `date` itself.",
           "type": "string",
           "pattern": "^[0-9]{4}-W(0[1-9]|[1-4][0-9]|5[0-3])$"
         },
@@ -107,20 +107,89 @@
           "additionalProperties": false
         },
         "approved_substitutions": {
-          "description": "Already approved substitutions of the window.",
+          "description": "Already approved substitutions (overlays) of the window, of every kind: the solver treats them as part of the baseline week. kind (0.5.0) defaults to teacher, the only shape before 0.5.0. At most one overlay per original slot of the week: maxItems = 200 classes x 6 days x 10 lessons (as solve.completed lessons).",
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["date", "class_id", "lesson_no", "teacher_id"],
+            "required": ["date", "class_id", "lesson_no"],
             "properties": {
               "date": { "$ref": "defs.v1.json#/$defs/date" },
               "class_id": { "$ref": "defs.v1.json#/$defs/id" },
               "lesson_no": { "$ref": "defs.v1.json#/$defs/lesson_no" },
+              "kind": {
+                "description": "0.5.0. teacher = another teacher; moved = the lesson goes to moved_to; self_study; cancelled (chosen only by a person).",
+                "enum": ["teacher", "moved", "self_study", "cancelled"],
+                "default": "teacher"
+              },
+              "teacher_id": {
+                "description": "The substitute; required for kind=teacher only.",
+                "$ref": "defs.v1.json#/$defs/id"
+              },
+              "subject_id": { "$ref": "defs.v1.json#/$defs/id" },
+              "moved_to": { "description": "0.5.0, kind=moved only.", "$ref": "defs.v1.json#/$defs/moved_to" }
+            },
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "$comment": "No kind = teacher (the 0.4.x shape).",
+                "if": { "properties": { "kind": { "const": "teacher" } } },
+                "then": {
+                  "required": ["teacher_id"],
+                  "properties": { "teacher_id": true, "moved_to": false }
+                }
+              },
+              {
+                "if": { "required": ["kind"], "properties": { "kind": { "const": "moved" } } },
+                "then": { "required": ["moved_to"], "properties": { "moved_to": true, "teacher_id": false } }
+              },
+              {
+                "if": {
+                  "required": ["kind"],
+                  "properties": { "kind": { "enum": ["self_study", "cancelled"] } }
+                },
+                "then": { "properties": { "teacher_id": false, "moved_to": false } }
+              }
+            ]
+          },
+          "maxItems": 12000
+        },
+        "absences": {
+          "description": "0.5.0, deviation from v24 §06 (ADR 2026-11-15-solver-substitution-engine). All absences of the ISO week, including those of absent_teacher_id (also on `date`): the solver never proposes a teacher in a lesson he is absent from, and step 2 needs the absent teacher's own lesson_nos. lesson_nos null = the whole date. Ids only: no reason, no name (personal-data minimisation, Law 2297-VI art. 6). Missing = only absent_teacher_id is absent, on absence_dates, the whole day (so step 2 has no moves). At most one row per (teacher, date): maxItems = 500 teachers (solve.build.requested limit) x 7 dates of an ISO week.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["teacher_id", "date", "lesson_nos"],
+            "properties": {
               "teacher_id": { "$ref": "defs.v1.json#/$defs/id" },
-              "subject_id": { "$ref": "defs.v1.json#/$defs/id" }
+              "date": { "$ref": "defs.v1.json#/$defs/date" },
+              "lesson_nos": {
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": { "$ref": "defs.v1.json#/$defs/lesson_no" },
+                    "minItems": 1,
+                    "uniqueItems": true
+                  },
+                  { "type": "null" }
+                ]
+              }
             },
             "additionalProperties": false
-          }
+          },
+          "maxItems": 3500
+        },
+        "non_school_dates": {
+          "description": "0.5.0, deviation from v24 §06 (ADR 2026-11-15-solver-substitution-engine). Holidays and other non-working dates of the ISO week: no lessons are held, they are not in the step 3 window, and their lessons do not count to the weekly limit. [] = no such dates. Missing = step 3 is off (the job stops after step 2), which is how timetable turns step 3 off. maxItems = the 7 dates of one ISO week.",
+          "type": "array",
+          "items": { "$ref": "defs.v1.json#/$defs/date" },
+          "uniqueItems": true,
+          "maxItems": 7
+        },
+        "allow_support_moves": {
+          "$comment": "CONDITIONAL DEVIATION FROM v24 §06 (line 358), ADR 2026-11-15-solver-substitution-engine: spec step 2 rebuilds the whole day. With allow_support_moves=false (the default and the minimum before the defence) step 2 moves only the absent teacher's lessons, with no chains of other teachers' lessons, and slots freed by the same job are forbidden. true restores the spec's full rebuild once timetable applies support rows; a separate ADR records the decision.",
+          "description": "0.5.0. false (default): only lessons of absent_teacher_id move, only into slots free in the template plus approved_substitutions, never into a slot freed by another proposal of the same job, and every proposal is a lesson of `lessons`. true (after the defence): steps 2 and 3 may also move other teachers' lessons (chains of swaps); those rows come back as kind=moved outside `lessons`. timetable sends true only once it applies such rows.",
+          "type": "boolean",
+          "default": false
         }
       },
       "additionalProperties": false

@@ -1,0 +1,664 @@
+{
+  "name": "10-forbidden-no-lessons-that-day",
+  "description": "\"Works that day\" = has at least one lesson that day (Roman, 15.11.2026). t-5 is free but has no lesson on Tuesday, so he is not a candidate; t-4 has no limit left: c-1 L1 is self_study.",
+  "params": {
+    "works_that_day": "has_lesson_that_day",
+    "off_profile": "no_row_with_subject",
+    "equal_distance": "later_date",
+    "step2_scope": "per_lesson",
+    "self_study_step": "last_step_that_ran"
+  },
+  "given": {
+    "request": {
+      "job_id": "5d0b5e1c-0000-4000-8000-000000000010",
+      "date": "2026-11-17",
+      "absence_dates": [
+        "2026-11-17"
+      ],
+      "absent_teacher_id": "t-1",
+      "lessons": [
+        {
+          "class_id": "c-1",
+          "lesson_no": 1
+        },
+        {
+          "class_id": "c-2",
+          "lesson_no": 2
+        }
+      ],
+      "not_before": "2026-11-16",
+      "iso_week": "2026-W47",
+      "snapshot_version": 7,
+      "time_limit_s": 30,
+      "queue_deadline_at": "2026-11-16T08:10:00+02:00",
+      "school_days": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "lessons_per_day": 6,
+      "staff": 2,
+      "capacity": {
+        "passport": 200
+      },
+      "classes": [
+        {
+          "id": "c-1",
+          "students": 20,
+          "priority": true
+        },
+        {
+          "id": "c-2",
+          "students": 20,
+          "priority": false
+        },
+        {
+          "id": "c-3",
+          "students": 20,
+          "priority": false
+        }
+      ],
+      "subjects": [
+        {
+          "id": "s-math",
+          "priority_area": true,
+          "no_shelter": false
+        },
+        {
+          "id": "s-ukr",
+          "priority_area": false,
+          "no_shelter": false
+        },
+        {
+          "id": "s-eng",
+          "priority_area": false,
+          "no_shelter": false
+        },
+        {
+          "id": "s-phys",
+          "priority_area": false,
+          "no_shelter": false
+        },
+        {
+          "id": "s-art",
+          "priority_area": false,
+          "no_shelter": false
+        }
+      ],
+      "teachers": [
+        {
+          "id": "t-1",
+          "weekly_limit": 12,
+          "unavailable_days": []
+        },
+        {
+          "id": "t-2",
+          "weekly_limit": 18,
+          "unavailable_days": []
+        },
+        {
+          "id": "t-3",
+          "weekly_limit": 12,
+          "unavailable_days": []
+        },
+        {
+          "id": "t-4",
+          "weekly_limit": 6,
+          "unavailable_days": []
+        },
+        {
+          "id": "t-5",
+          "weekly_limit": 12,
+          "unavailable_days": []
+        }
+      ],
+      "rows": [
+        {
+          "class_id": "c-1",
+          "subject_id": "s-math",
+          "teacher_id": "t-1",
+          "hours": 5
+        },
+        {
+          "class_id": "c-1",
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2",
+          "hours": 5
+        },
+        {
+          "class_id": "c-1",
+          "subject_id": "s-art",
+          "teacher_id": "t-5",
+          "hours": 4
+        },
+        {
+          "class_id": "c-2",
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2",
+          "hours": 5
+        },
+        {
+          "class_id": "c-2",
+          "subject_id": "s-math",
+          "teacher_id": "t-1",
+          "hours": 5
+        },
+        {
+          "class_id": "c-2",
+          "subject_id": "s-eng",
+          "teacher_id": "t-3",
+          "hours": 4
+        },
+        {
+          "class_id": "c-3",
+          "subject_id": "s-eng",
+          "teacher_id": "t-3",
+          "hours": 5
+        },
+        {
+          "class_id": "c-3",
+          "subject_id": "s-math",
+          "teacher_id": "t-4",
+          "hours": 5
+        },
+        {
+          "class_id": "c-3",
+          "subject_id": "s-ukr",
+          "teacher_id": "t-2",
+          "hours": 5
+        },
+        {
+          "class_id": "c-1",
+          "subject_id": "s-eng",
+          "teacher_id": "t-3",
+          "hours": 1
+        },
+        {
+          "class_id": "c-2",
+          "subject_id": "s-phys",
+          "teacher_id": "t-4",
+          "hours": 1
+        }
+      ],
+      "template": {
+        "timetable_id": "9e1f7a20-3c4b-4d5e-8f60-7a8b9c0d1e2f",
+        "kind": "main",
+        "lessons": [
+          {
+            "class_id": "c-1",
+            "day": 1,
+            "lesson_no": 1,
+            "subject_id": "s-math",
+            "teacher_id": "t-1"
+          },
+          {
+            "class_id": "c-1",
+            "day": 1,
+            "lesson_no": 2,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-1",
+            "day": 1,
+            "lesson_no": 3,
+            "subject_id": "s-art",
+            "teacher_id": "t-5"
+          },
+          {
+            "class_id": "c-2",
+            "day": 1,
+            "lesson_no": 1,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-2",
+            "day": 1,
+            "lesson_no": 2,
+            "subject_id": "s-math",
+            "teacher_id": "t-1"
+          },
+          {
+            "class_id": "c-2",
+            "day": 1,
+            "lesson_no": 3,
+            "subject_id": "s-eng",
+            "teacher_id": "t-3"
+          },
+          {
+            "class_id": "c-3",
+            "day": 1,
+            "lesson_no": 1,
+            "subject_id": "s-eng",
+            "teacher_id": "t-3"
+          },
+          {
+            "class_id": "c-3",
+            "day": 1,
+            "lesson_no": 2,
+            "subject_id": "s-math",
+            "teacher_id": "t-4"
+          },
+          {
+            "class_id": "c-3",
+            "day": 1,
+            "lesson_no": 3,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-1",
+            "day": 2,
+            "lesson_no": 1,
+            "subject_id": "s-math",
+            "teacher_id": "t-1"
+          },
+          {
+            "class_id": "c-1",
+            "day": 2,
+            "lesson_no": 2,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-1",
+            "day": 2,
+            "lesson_no": 3,
+            "subject_id": "s-eng",
+            "teacher_id": "t-3"
+          },
+          {
+            "class_id": "c-2",
+            "day": 2,
+            "lesson_no": 1,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-2",
+            "day": 2,
+            "lesson_no": 2,
+            "subject_id": "s-math",
+            "teacher_id": "t-1"
+          },
+          {
+            "class_id": "c-2",
+            "day": 2,
+            "lesson_no": 3,
+            "subject_id": "s-phys",
+            "teacher_id": "t-4"
+          },
+          {
+            "class_id": "c-3",
+            "day": 2,
+            "lesson_no": 1,
+            "subject_id": "s-eng",
+            "teacher_id": "t-3"
+          },
+          {
+            "class_id": "c-3",
+            "day": 2,
+            "lesson_no": 2,
+            "subject_id": "s-math",
+            "teacher_id": "t-4"
+          },
+          {
+            "class_id": "c-3",
+            "day": 2,
+            "lesson_no": 3,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-1",
+            "day": 3,
+            "lesson_no": 1,
+            "subject_id": "s-math",
+            "teacher_id": "t-1"
+          },
+          {
+            "class_id": "c-1",
+            "day": 3,
+            "lesson_no": 2,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-1",
+            "day": 3,
+            "lesson_no": 3,
+            "subject_id": "s-art",
+            "teacher_id": "t-5"
+          },
+          {
+            "class_id": "c-2",
+            "day": 3,
+            "lesson_no": 1,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-2",
+            "day": 3,
+            "lesson_no": 2,
+            "subject_id": "s-math",
+            "teacher_id": "t-1"
+          },
+          {
+            "class_id": "c-2",
+            "day": 3,
+            "lesson_no": 3,
+            "subject_id": "s-eng",
+            "teacher_id": "t-3"
+          },
+          {
+            "class_id": "c-3",
+            "day": 3,
+            "lesson_no": 1,
+            "subject_id": "s-eng",
+            "teacher_id": "t-3"
+          },
+          {
+            "class_id": "c-3",
+            "day": 3,
+            "lesson_no": 2,
+            "subject_id": "s-math",
+            "teacher_id": "t-4"
+          },
+          {
+            "class_id": "c-3",
+            "day": 3,
+            "lesson_no": 3,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-1",
+            "day": 4,
+            "lesson_no": 1,
+            "subject_id": "s-math",
+            "teacher_id": "t-1"
+          },
+          {
+            "class_id": "c-1",
+            "day": 4,
+            "lesson_no": 2,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-1",
+            "day": 4,
+            "lesson_no": 3,
+            "subject_id": "s-art",
+            "teacher_id": "t-5"
+          },
+          {
+            "class_id": "c-2",
+            "day": 4,
+            "lesson_no": 1,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-2",
+            "day": 4,
+            "lesson_no": 2,
+            "subject_id": "s-math",
+            "teacher_id": "t-1"
+          },
+          {
+            "class_id": "c-2",
+            "day": 4,
+            "lesson_no": 3,
+            "subject_id": "s-eng",
+            "teacher_id": "t-3"
+          },
+          {
+            "class_id": "c-3",
+            "day": 4,
+            "lesson_no": 1,
+            "subject_id": "s-eng",
+            "teacher_id": "t-3"
+          },
+          {
+            "class_id": "c-3",
+            "day": 4,
+            "lesson_no": 2,
+            "subject_id": "s-math",
+            "teacher_id": "t-4"
+          },
+          {
+            "class_id": "c-3",
+            "day": 4,
+            "lesson_no": 3,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-1",
+            "day": 5,
+            "lesson_no": 1,
+            "subject_id": "s-math",
+            "teacher_id": "t-1"
+          },
+          {
+            "class_id": "c-1",
+            "day": 5,
+            "lesson_no": 2,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-1",
+            "day": 5,
+            "lesson_no": 3,
+            "subject_id": "s-art",
+            "teacher_id": "t-5"
+          },
+          {
+            "class_id": "c-2",
+            "day": 5,
+            "lesson_no": 1,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          },
+          {
+            "class_id": "c-2",
+            "day": 5,
+            "lesson_no": 2,
+            "subject_id": "s-math",
+            "teacher_id": "t-1"
+          },
+          {
+            "class_id": "c-2",
+            "day": 5,
+            "lesson_no": 3,
+            "subject_id": "s-eng",
+            "teacher_id": "t-3"
+          },
+          {
+            "class_id": "c-3",
+            "day": 5,
+            "lesson_no": 1,
+            "subject_id": "s-eng",
+            "teacher_id": "t-3"
+          },
+          {
+            "class_id": "c-3",
+            "day": 5,
+            "lesson_no": 2,
+            "subject_id": "s-math",
+            "teacher_id": "t-4"
+          },
+          {
+            "class_id": "c-3",
+            "day": 5,
+            "lesson_no": 3,
+            "subject_id": "s-ukr",
+            "teacher_id": "t-2"
+          }
+        ],
+        "day_formats": [
+          {
+            "class_id": "c-1",
+            "day": 1,
+            "in_person": true
+          },
+          {
+            "class_id": "c-1",
+            "day": 2,
+            "in_person": true
+          },
+          {
+            "class_id": "c-1",
+            "day": 3,
+            "in_person": true
+          },
+          {
+            "class_id": "c-1",
+            "day": 4,
+            "in_person": true
+          },
+          {
+            "class_id": "c-1",
+            "day": 5,
+            "in_person": true
+          },
+          {
+            "class_id": "c-2",
+            "day": 1,
+            "in_person": true
+          },
+          {
+            "class_id": "c-2",
+            "day": 2,
+            "in_person": true
+          },
+          {
+            "class_id": "c-2",
+            "day": 3,
+            "in_person": true
+          },
+          {
+            "class_id": "c-2",
+            "day": 4,
+            "in_person": true
+          },
+          {
+            "class_id": "c-2",
+            "day": 5,
+            "in_person": true
+          },
+          {
+            "class_id": "c-3",
+            "day": 1,
+            "in_person": true
+          },
+          {
+            "class_id": "c-3",
+            "day": 2,
+            "in_person": true
+          },
+          {
+            "class_id": "c-3",
+            "day": 3,
+            "in_person": true
+          },
+          {
+            "class_id": "c-3",
+            "day": 4,
+            "in_person": true
+          },
+          {
+            "class_id": "c-3",
+            "day": 5,
+            "in_person": true
+          }
+        ]
+      },
+      "approved_substitutions": [],
+      "absences": [
+        {
+          "teacher_id": "t-1",
+          "date": "2026-11-17",
+          "lesson_nos": null
+        }
+      ],
+      "allow_support_moves": false
+    }
+  },
+  "expect": {
+    "status_in": [
+      "OPTIMAL",
+      "FEASIBLE"
+    ],
+    "extra_rows": [],
+    "step": 2,
+    "never_teachers": [
+      "t-1",
+      "t-4",
+      "t-5"
+    ],
+    "lessons": [
+      {
+        "class_id": "c-1",
+        "lesson_no": 1,
+        "kind": "self_study",
+        "step": 2
+      },
+      {
+        "class_id": "c-2",
+        "lesson_no": 2,
+        "kind": "teacher",
+        "teacher_id": "t-3",
+        "off_profile": true,
+        "step": 1
+      }
+    ]
+  },
+  "alternatives": [
+    {
+      "params": {
+        "works_that_day": "any_available_teacher"
+      },
+      "note": "Rejected interpretation, kept to show what the parameter changes: t-5 (art) becomes a candidate.",
+      "expect": {
+        "status_in": [
+          "OPTIMAL",
+          "FEASIBLE"
+        ],
+        "extra_rows": [],
+        "step": 1,
+        "never_teachers": [
+          "t-1",
+          "t-4"
+        ],
+        "lessons": [
+          {
+            "class_id": "c-1",
+            "lesson_no": 1,
+            "kind": "teacher",
+            "teacher_id": "t-5",
+            "off_profile": true,
+            "step": 1
+          },
+          {
+            "class_id": "c-2",
+            "lesson_no": 2,
+            "kind": "teacher",
+            "teacher_id_in": [
+              "t-3",
+              "t-5"
+            ],
+            "off_profile": true,
+            "step": 1
+          }
+        ]
+      }
+    }
+  ]
+}

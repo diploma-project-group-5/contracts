@@ -1,0 +1,66 @@
+{
+  "name": "14-substitution-completed",
+  "description": "Substitution job with the stage 2 engine (solver >= 0.4.0, ADR 2026-11-15-solver-substitution-engine): solve.started, then solve.completed OPTIMAL with data.substitution (lessons, day_formats and conflicts empty). The job becomes done if validator-lib (newConflicts) finds no new conflict in the effective week, else rejected; the scenario assumes the proposals are valid. Compare 13: an older solver refuses the job.",
+  "job": {
+    "job_id": "8f0c1a2e-0000-4000-8000-000000000014",
+    "kind": "substitution",
+    "created_at": "2026-11-16T08:00:00Z",
+    "queue_deadline_at": "2026-11-16T08:10:00Z",
+    "time_limit_s": 30
+  },
+  "run_deadline_margin_s": 90,
+  "steps": [
+    {
+      "event": {
+        "type": "solve.started",
+        "event_id": "e-started",
+        "data": {
+          "job_id": "8f0c1a2e-0000-4000-8000-000000000014",
+          "started_at": "2026-11-16T08:00:01Z"
+        }
+      }
+    },
+    {
+      "event": {
+        "type": "solve.completed",
+        "event_id": "e-completed",
+        "data": {
+          "job_id": "8f0c1a2e-0000-4000-8000-000000000014",
+          "status": "OPTIMAL",
+          "lessons": [],
+          "day_formats": [],
+          "conflicts": [],
+          "substitution": {
+            "step": 2,
+            "proposals": [
+              {
+                "date": "2026-11-17",
+                "class_id": "c-1",
+                "lesson_no": 1,
+                "kind": "teacher",
+                "teacher_id": "t-4",
+                "off_profile": false,
+                "step": 1
+              },
+              {
+                "date": "2026-11-17",
+                "class_id": "c-2",
+                "lesson_no": 2,
+                "kind": "moved",
+                "moved_to": {
+                  "date": "2026-11-17",
+                  "lesson_no": 4
+                },
+                "step": 2
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "expected": {
+    "state": "done",
+    "ignored_steps": []
+  }
+}

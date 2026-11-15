@@ -39,7 +39,7 @@
       "properties": {
         "job_id": { "$ref": "defs.v1.json#/$defs/uuid" },
         "status": {
-          "description": "OPTIMAL/FEASIBLE carry a timetable; INFEASIBLE carries conflicts; UNKNOWN = no solution within the limit; MODEL_INVALID = technical failure, never retried (error.code says why); EXPIRED = skipped because queue_deadline_at had passed. OPTIMAL is relative to the solver's model, which includes the per-row daily cap (quality rule, ADR 2026-11-04 §1): with stats.quality_relaxed=false it is optimal among timetables that respect the cap, not necessarily for the uncapped problem of spec §04; with quality_relaxed=true the cap was dropped and the model is the spec §04 problem.",
+          "description": "OPTIMAL/FEASIBLE carry a timetable (a build job) or `substitution` (a substitution job, which always has a solution: OPTIMAL or FEASIBLE, never INFEASIBLE); INFEASIBLE carries conflicts; UNKNOWN = no solution within the limit; MODEL_INVALID = technical failure, never retried (error.code says why); EXPIRED = skipped because queue_deadline_at had passed. OPTIMAL is relative to the solver's model, which includes the per-row daily cap (quality rule, ADR 2026-11-04 §1): with stats.quality_relaxed=false it is optimal among timetables that respect the cap, not necessarily for the uncapped problem of spec §04; with quality_relaxed=true the cap was dropped and the model is the spec §04 problem.",
           "enum": ["OPTIMAL", "FEASIBLE", "INFEASIBLE", "UNKNOWN", "MODEL_INVALID", "EXPIRED"]
         },
         "lessons": {
@@ -59,7 +59,7 @@
           "items": { "$ref": "conflict.v1.json" }
         },
         "error": {
-          "description": "Present only with status MODEL_INVALID. unsupported_job_type: the solver cannot run this kind of job yet (substitution jobs until the stage 2 engine, ADR 2026-11-15); lessons, day_formats and conflicts are empty and no solve.started precedes it.",
+          "description": "Present only with status MODEL_INVALID. unsupported_job_type: the solver cannot run this kind of job; solvers before 0.4.0 answer every substitution job so (ADR 2026-11-15-solver-substitution-unsupported). The value stays for those solvers; the stage 2 engine (ADR 2026-11-15-solver-substitution-engine) answers with `substitution` instead. lessons, day_formats and conflicts are empty and no solve.started precedes it.",
           "type": "object",
           "required": ["code"],
           "properties": {
@@ -75,13 +75,87 @@
           },
           "additionalProperties": false
         },
-        "stats": { "$ref": "#/$defs/stats" }
+        "stats": { "$ref": "#/$defs/stats" },
+        "substitution": { "$ref": "#/$defs/substitution" }
       },
       "additionalProperties": false,
       "allOf": [
         {
-          "if": { "required": ["error"] },
+          "if": { "required": ["error"], "properties": { "error": true } },
           "then": { "properties": { "status": { "const": "MODEL_INVALID" } } }
+        },
+        {
+          "$comment": "0.5.0: a substitution result carries no timetable and no conflicts.",
+          "if": { "required": ["substitution"], "properties": { "substitution": true } },
+          "then": {
+            "properties": {
+              "status": { "enum": ["OPTIMAL", "FEASIBLE"] },
+              "lessons": { "type": "array", "maxItems": 0 },
+              "day_formats": { "type": "array", "maxItems": 0 },
+              "conflicts": { "type": "array", "maxItems": 0 }
+            }
+          }
+        }
+      ]
+    },
+    "substitution": {
+      "description": "0.5.0, result of a substitution job (ADR 2026-11-15-solver-substitution-engine, spec §06: 'for a substitution, the step it was found at'). Present only with OPTIMAL/FEASIBLE; lessons, day_formats and conflicts are then empty. The solver only proposes: timetable builds the effective week and validator-lib (newConflicts) gives the verdict; a person approves or picks cancelled. Invariant (not expressible in JSON Schema; checked by vectors/substitution-solve and by timetable, which rejects the result otherwise): every lesson of the request's `lessons` (the absent teacher's lessons on `date`) appears exactly once, with `date` = the request's date and the same class_id and lesson_no. Rows outside `lessons` are allowed only with kind=moved and only when the request had allow_support_moves=true (another teacher's lesson moved to make room); with allow_support_moves=false (default) there are none. A step-2 moved row has moved_to.date = date; a step-3 moved row has moved_to.date != date and inside the request's window (a school day of iso_week, >= not_before, not in non_school_dates). No other ids are repeated: subject, original teacher and timetable_id follow from the request.",
+      "type": "object",
+      "required": ["step", "proposals"],
+      "properties": {
+        "step": {
+          "description": "Last step the job reached = max(proposals[].step): 1 free teacher, 2 rebuild of the date, 3 neighbour dates.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "proposals": {
+          "description": "maxItems is a static bound (JSON Schema cannot tie it to the request): far above one teacher's day (<= 10 lessons) plus the support moves of the rebuilt dates. A bigger result is replaced with MODEL_INVALID / result_too_large.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/proposal" },
+          "maxItems": 600
+        }
+      },
+      "additionalProperties": false
+    },
+    "proposal": {
+      "description": "One proposed change of one lesson slot (date, class_id, lesson_no) of the baseline week. kind=teacher: teacher_id teaches it instead (off_profile = the substitute has no curriculum row with the lesson's subject, 'не за фахом'); kind=moved: the lesson goes to moved_to, same class, subject and teacher; kind=self_study: no teacher, the class keeps its day format. cancelled is never proposed: only a person chooses it.",
+      "type": "object",
+      "required": ["date", "class_id", "lesson_no", "kind", "step"],
+      "properties": {
+        "date": { "$ref": "defs.v1.json#/$defs/date" },
+        "class_id": { "$ref": "defs.v1.json#/$defs/id" },
+        "lesson_no": { "$ref": "defs.v1.json#/$defs/lesson_no" },
+        "kind": { "enum": ["teacher", "moved", "self_study"] },
+        "teacher_id": { "description": "kind=teacher only: the substitute.", "$ref": "defs.v1.json#/$defs/id" },
+        "off_profile": { "description": "kind=teacher only.", "type": "boolean" },
+        "moved_to": { "description": "kind=moved only.", "$ref": "defs.v1.json#/$defs/moved_to" },
+        "step": {
+          "description": "Step that produced the row; for self_study the last step that ran (3 when the request had non_school_dates, else 2).",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "teacher" } } },
+          "then": {
+            "required": ["teacher_id", "off_profile"],
+            "properties": { "teacher_id": true, "off_profile": true, "moved_to": false }
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "moved" } } },
+          "then": {
+            "required": ["moved_to"],
+            "properties": { "moved_to": true, "teacher_id": false, "off_profile": false, "step": { "type": "integer", "minimum": 2 } }
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "self_study" } } },
+          "then": { "properties": { "teacher_id": false, "off_profile": false, "moved_to": false } }
         }
       ]
     },

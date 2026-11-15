@@ -144,6 +144,16 @@
         "in_person": { "type": "boolean" }
       },
       "additionalProperties": false
+    },
+    "moved_to": {
+      "description": "Target slot of a moved lesson (0.5.0): a date of the job's ISO week and a lesson number. The class, subject and teacher stay those of the original slot.",
+      "type": "object",
+      "required": ["date", "lesson_no"],
+      "properties": {
+        "date": { "$ref": "#/$defs/date" },
+        "lesson_no": { "$ref": "#/$defs/lesson_no" }
+      },
+      "additionalProperties": false
     }
   }
 }
