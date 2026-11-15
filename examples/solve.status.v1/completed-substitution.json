@@ -1,0 +1,68 @@
+{
+  "event_id": "5b8e2f1c-7a3d-5c9e-8f21-4d6b0a9c3e71",
+  "type": "solve.completed",
+  "schema_version": "1.0",
+  "source": "solver",
+  "time": "2026-11-10T08:05:03+02:00",
+  "correlation_id": "req-5f2c9a",
+  "school_id": "7b0f8c1e-3d2a-4c51-9a6e-1f2b3c4d5e6f",
+  "data": {
+    "job_id": "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+    "status": "OPTIMAL",
+    "lessons": [],
+    "day_formats": [],
+    "conflicts": [],
+    "substitution": {
+      "step": 3,
+      "proposals": [
+        {
+          "date": "2026-11-11",
+          "class_id": "c-5a",
+          "lesson_no": 2,
+          "kind": "teacher",
+          "teacher_id": "t-2",
+          "off_profile": true,
+          "step": 1
+        },
+        {
+          "date": "2026-11-11",
+          "class_id": "c-9b",
+          "lesson_no": 3,
+          "kind": "moved",
+          "moved_to": {
+            "date": "2026-11-11",
+            "lesson_no": 6
+          },
+          "step": 2
+        },
+        {
+          "date": "2026-11-11",
+          "class_id": "c-5a",
+          "lesson_no": 4,
+          "kind": "moved",
+          "moved_to": {
+            "date": "2026-11-10",
+            "lesson_no": 5
+          },
+          "step": 3
+        },
+        {
+          "date": "2026-11-11",
+          "class_id": "c-9b",
+          "lesson_no": 5,
+          "kind": "self_study",
+          "step": 3
+        }
+      ]
+    },
+    "stats": {
+      "wall_time_ms": 2140,
+      "num_workers": 1,
+      "random_seed": 0,
+      "solver_version": "0.4.0",
+      "model_version": "substitution/2026-11-15",
+      "input_sha256": "9f2c4e6a8b0d1f3e5a7c9e1b3d5f7a9c1e3b5d7f9a1c3e5b7d9f1a3c5e7b9d1f",
+      "stop_reason": "completed"
+    }
+  }
+}
