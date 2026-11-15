@@ -38,6 +38,7 @@ const SUBJECTS = [
   { id: 's-phys', priority_area: false, no_shelter: false },
   { id: 's-art', priority_area: false, no_shelter: false },
 ];
+const PE = { id: 's-pe', priority_area: false, no_shelter: true };
 const CLASSES = [
   { id: 'c-1', students: 20, priority: true },
   { id: 'c-2', students: 20, priority: false },
@@ -59,7 +60,7 @@ const request = (o = {}) => {
   seq += 1;
   const date = o.date ?? DATE[2];
   const tuesday = o.tuesday ?? TUESDAY;
-  const lessons = [1, 3, 4, 5].flatMap(otherDay).concat(tuesday)
+  const lessons = [1, 3, 4, 5].flatMap((d) => o.days?.[d] ?? otherDay(d)).concat(tuesday)
     .sort((a, b) => a.day - b.day || a.class_id.localeCompare(b.class_id) || a.lesson_no - b.lesson_no);
   const remote = new Set((o.remote ?? []).map(([c, d]) => `${c}/${d}`));
   const dayFormats = [];
@@ -99,12 +100,12 @@ const request = (o = {}) => {
     school_days: [1, 2, 3, 4, 5],
     lessons_per_day: 6,
     staff: 2,
-    capacity: { passport: 200 },
+    capacity: o.capacity ?? { passport: 200 },
     classes: CLASSES,
-    subjects: SUBJECTS,
+    subjects: o.subjects ?? SUBJECTS,
     teachers: Object.entries(limits).map(([id, weekly_limit]) => ({ id, weekly_limit, unavailable_days: o.unavailable?.[id] ?? [] })),
     rows: [...rows.values()],
-    template: { timetable_id: '9e1f7a20-3c4b-4d5e-8f60-7a8b9c0d1e2f', kind: 'main', lessons, day_formats: dayFormats },
+    template: { timetable_id: '9e1f7a20-3c4b-4d5e-8f60-7a8b9c0d1e2f', kind: o.kind ?? 'main', lessons, day_formats: dayFormats },
     approved_substitutions: approved,
     absences,
     allow_support_moves: false,
@@ -218,8 +219,8 @@ add('11-forbidden-mixed-format',
   }),
   { step: 2, never_teachers: ['t-1', 't-3', 't-4', 't-5'], lessons: [selfStudy('c-1', 1, 2), selfStudy('c-2', 2, 2)] });
 
-add('12-no-move-into-slot-freed-by-same-job',
-  'allow_support_moves=false: c-1 is full in L2-L6 on Tuesday and t-1 is absent only in L1. The only way to place c-1 L1 is a chain: t-5\'s art L4 moves into the slot that the maths lesson frees (L1) and the maths lesson takes L4. A move into a slot freed by another proposal of the same job is forbidden without the flag, so c-1 L1 is self_study and no row outside `lessons` appears.',
+add('12-no-swap-chains-without-support-moves',
+  'Ban on support moves (swap chains) while allow_support_moves=false (conditional deviation from v24 §06 line 358): c-1 is full in L2-L6 on Tuesday and t-1 is absent only in L1. The only way to place c-1 L1 is a chain: t-5\'s art L4 moves into the slot that the maths lesson frees (L1) and the maths lesson takes L4. That chain moves another teacher\'s lesson into a slot freed by another proposal of the same job, which is forbidden without the flag, so c-1 L1 is self_study and no row outside `lessons` appears.',
   request({
     tuesday: [
       L('c-1', 2, 1, 's-math', 't-1'), L('c-1', 2, 2, 's-ukr', 't-2'), L('c-1', 2, 3, 's-eng', 't-3'),
@@ -311,6 +312,66 @@ add('18-step3-skips-dates-of-the-same-absence',
   {
     step: 3, never_teachers: ['t-1', 't-3', 't-4', 't-5'], never_dates: except(DATE[4]),
     lessons: [moved('c-1', 1, DATE[4], FREE_AFTER_L3, 3), moved('c-2', 2, DATE[4], FREE_AFTER_L3, 3)],
+  });
+
+// Wednesday without t-1 (his maths in c-1/c-2 replaced by other subjects): t-1 coming to move a lesson here adds
+// one teacher on site (spec §06: a new in-person teacher adds 1).
+const WEDNESDAY_NO_T1 = [
+  L('c-1', 3, 1, 's-phys', 't-4'), L('c-1', 3, 2, 's-ukr', 't-2'), L('c-1', 3, 3, 's-art', 't-5'),
+  L('c-2', 3, 1, 's-ukr', 't-2'), L('c-2', 3, 2, 's-art', 't-5'), L('c-2', 3, 3, 's-eng', 't-3'),
+  L('c-3', 3, 1, 's-eng', 't-3'), L('c-3', 3, 2, 's-math', 't-4'), L('c-3', 3, 3, 's-ukr', 't-2'),
+];
+// Only Wednesday is in the step 3 window: Monday, Thursday, Friday are non-school dates, not_before = Tuesday.
+const ONLY_WEDNESDAY = { days: { 3: WEDNESDAY_NO_T1 }, non_school_dates: [DATE[1], DATE[4], DATE[5]], not_before: DATE[2], exhaust: ['t-3', 't-4'] };
+
+add('19-capacity-step2-at-limit',
+  'Capacity, step 2, model 1.1: Tuesday load = 60 students (all in person) + 2 staff + 4 teachers on site (t-1 counted from the template) = 66 = passport. A move within the day does not change who is on site, so both lessons move (exactly at the limit passes). The other dates are non-school dates, so no other date of the week is over.',
+  request({
+    absences: [absence('t-1', DATE[2], [1, 2])], capacity: { passport: 66 }, non_school_dates: [DATE[1], DATE[3], DATE[4], DATE[5]],
+    exhaust: ['t-3', 't-4'],
+  }),
+  {
+    step: 2, never_teachers: ['t-1', 't-3', 't-4', 't-5'], never_dates: except(DATE[2]),
+    lessons: [moved('c-1', 1, DATE[2], FREE_AFTER_L3, 2), moved('c-2', 2, DATE[2], FREE_AFTER_L3, 2)],
+  });
+
+add('20-capacity-step3-at-limit',
+  'Capacity, step 3, model 1.1: t-1 has no lesson on Wednesday; its load is 60 + 2 + 4 = 66. Moving his lessons there brings him on site once: 67 = passport, exactly at the limit, so both lessons go to Wednesday.',
+  request({ ...ONLY_WEDNESDAY, capacity: { passport: 67 } }),
+  {
+    step: 3, never_teachers: ['t-1', 't-3', 't-4', 't-5'], never_dates: except(DATE[3]),
+    lessons: [moved('c-1', 1, DATE[3], FREE_AFTER_L3, 3), moved('c-2', 2, DATE[3], FREE_AFTER_L3, 3)],
+  });
+
+add('21-capacity-step3-over-by-one',
+  'As 20 with passport 66: t-1 on site on Wednesday would make 67 > 66 (+1), so Wednesday is refused; it is the only date of the window, so both lessons are self_study.',
+  request({ ...ONLY_WEDNESDAY, capacity: { passport: 66 } }),
+  { step: 3, never_teachers: ['t-1', 't-3', 't-4', 't-5'], never_dates: ALL_DATES, lessons: [selfStudy('c-1', 1, 3), selfStudy('c-2', 2, 3)] });
+
+add('22-alert-passport-over-seats-at-limit',
+  'Alert template (model 1.2), conditions checked separately. Wednesday: seats 60 = 60 students in person (exactly at the limit; a move never changes students, day formats are fixed); passport 66 = 60 + 2 + 4, and t-1 coming on site would make 67 > 66. Wednesday is refused by passport alone: both lessons are self_study.',
+  request({ ...ONLY_WEDNESDAY, kind: 'alert', capacity: { seats: 60, passport: 66 } }),
+  { step: 3, never_teachers: ['t-1', 't-3', 't-4', 't-5'], never_dates: ALL_DATES, lessons: [selfStudy('c-1', 1, 3), selfStudy('c-2', 2, 3)] });
+
+add('23-alert-no-shelter-stays-remote',
+  'Alert template (model 1.2). On Tuesday c-1 and c-2 are remote; c-2 L2 is PE (no_shelter). Wednesday is in person for every class, Thursday remote. Step 3: c-1 maths goes to the nearest date, Wednesday (t-1 is already on site there: seats 60/60 and passport 67/67 stay exactly at the limit); the PE lesson must not land in an in-person day, so it skips Wednesday and goes to Thursday.',
+  request({
+    kind: 'alert',
+    capacity: { seats: 60, passport: 67 },
+    subjects: [...SUBJECTS, PE],
+    tuesday: [
+      L('c-1', 2, 1, 's-math', 't-1'), L('c-1', 2, 2, 's-ukr', 't-2'), L('c-1', 2, 3, 's-eng', 't-3'),
+      L('c-2', 2, 1, 's-ukr', 't-2'), L('c-2', 2, 2, 's-pe', 't-1'),
+      L('c-3', 2, 1, 's-phys', 't-4'), L('c-3', 2, 2, 's-math', 't-4'), L('c-3', 2, 3, 's-art', 't-5'),
+    ],
+    remote: [['c-1', 2], ['c-2', 2], ['c-1', 4], ['c-2', 4], ['c-3', 4]],
+    non_school_dates: [],
+    not_before: DATE[2],
+    exhaust: ['t-3'],
+  }),
+  {
+    step: 3, never_teachers: ['t-1', 't-3', 't-4', 't-5'],
+    lessons: [moved('c-1', 1, DATE[3], FREE_AFTER_L3, 3), moved('c-2', 2, DATE[4], FREE_AFTER_L3, 3)],
   });
 
 for (const v of vectors) writeFileSync(join(OUT, `${v.name}.json`), JSON.stringify(v.body, null, 2) + '\n');

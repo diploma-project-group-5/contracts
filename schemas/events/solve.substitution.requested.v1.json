@@ -107,7 +107,7 @@
           "additionalProperties": false
         },
         "approved_substitutions": {
-          "description": "Already approved substitutions (overlays) of the window, of every kind: the solver treats them as part of the baseline week. kind (0.5.0) defaults to teacher, the only shape before 0.5.0.",
+          "description": "Already approved substitutions (overlays) of the window, of every kind: the solver treats them as part of the baseline week. kind (0.5.0) defaults to teacher, the only shape before 0.5.0. At most one overlay per original slot of the week: maxItems = 200 classes x 6 days x 10 lessons (as solve.completed lessons).",
           "type": "array",
           "items": {
             "type": "object",
@@ -133,7 +133,10 @@
               {
                 "$comment": "No kind = teacher (the 0.4.x shape).",
                 "if": { "properties": { "kind": { "const": "teacher" } } },
-                "then": { "required": ["teacher_id"], "properties": { "teacher_id": true, "moved_to": false } }
+                "then": {
+                  "required": ["teacher_id"],
+                  "properties": { "teacher_id": true, "moved_to": false }
+                }
               },
               {
                 "if": { "required": ["kind"], "properties": { "kind": { "const": "moved" } } },
@@ -147,10 +150,11 @@
                 "then": { "properties": { "teacher_id": false, "moved_to": false } }
               }
             ]
-          }
+          },
+          "maxItems": 12000
         },
         "absences": {
-          "description": "0.5.0, deviation from v24 §06 (ADR 2026-11-15-solver-substitution-engine). All absences of the ISO week, including those of absent_teacher_id (also on `date`): the solver never proposes a teacher in a lesson he is absent from, and step 2 needs the absent teacher's own lesson_nos. lesson_nos null = the whole date. Ids only: no reason, no name (personal-data minimisation, Law 2297-VI art. 6). Missing = only absent_teacher_id is absent, on absence_dates, the whole day (so step 2 has no moves).",
+          "description": "0.5.0, deviation from v24 §06 (ADR 2026-11-15-solver-substitution-engine). All absences of the ISO week, including those of absent_teacher_id (also on `date`): the solver never proposes a teacher in a lesson he is absent from, and step 2 needs the absent teacher's own lesson_nos. lesson_nos null = the whole date. Ids only: no reason, no name (personal-data minimisation, Law 2297-VI art. 6). Missing = only absent_teacher_id is absent, on absence_dates, the whole day (so step 2 has no moves). At most one row per (teacher, date): maxItems = 500 teachers (solve.build.requested limit) x 7 dates of an ISO week.",
           "type": "array",
           "items": {
             "type": "object",
@@ -171,15 +175,18 @@
               }
             },
             "additionalProperties": false
-          }
+          },
+          "maxItems": 3500
         },
         "non_school_dates": {
-          "description": "0.5.0, deviation from v24 §06 (ADR 2026-11-15-solver-substitution-engine). Holidays and other non-working dates of the ISO week: no lessons are held, they are not in the step 3 window, and their lessons do not count to the weekly limit. [] = no such dates. Missing = step 3 is off (the job stops after step 2), which is how timetable turns step 3 off.",
+          "description": "0.5.0, deviation from v24 §06 (ADR 2026-11-15-solver-substitution-engine). Holidays and other non-working dates of the ISO week: no lessons are held, they are not in the step 3 window, and their lessons do not count to the weekly limit. [] = no such dates. Missing = step 3 is off (the job stops after step 2), which is how timetable turns step 3 off. maxItems = the 7 dates of one ISO week.",
           "type": "array",
           "items": { "$ref": "defs.v1.json#/$defs/date" },
-          "uniqueItems": true
+          "uniqueItems": true,
+          "maxItems": 7
         },
         "allow_support_moves": {
+          "$comment": "CONDITIONAL DEVIATION FROM v24 §06 (line 358), ADR 2026-11-15-solver-substitution-engine: spec step 2 rebuilds the whole day. With allow_support_moves=false (the default and the minimum before the defence) step 2 moves only the absent teacher's lessons, with no chains of other teachers' lessons, and slots freed by the same job are forbidden. true restores the spec's full rebuild once timetable applies support rows; a separate ADR records the decision.",
           "description": "0.5.0. false (default): only lessons of absent_teacher_id move, only into slots free in the template plus approved_substitutions, never into a slot freed by another proposal of the same job, and every proposal is a lesson of `lessons`. true (after the defence): steps 2 and 3 may also move other teachers' lessons (chains of swaps); those rows come back as kind=moved outside `lessons`. timetable sends true only once it applies such rows.",
           "type": "boolean",
           "default": false

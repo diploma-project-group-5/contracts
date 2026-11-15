@@ -1,6 +1,6 @@
 {
-  "name": "12-no-move-into-slot-freed-by-same-job",
-  "description": "allow_support_moves=false: c-1 is full in L2-L6 on Tuesday and t-1 is absent only in L1. The only way to place c-1 L1 is a chain: t-5's art L4 moves into the slot that the maths lesson frees (L1) and the maths lesson takes L4. A move into a slot freed by another proposal of the same job is forbidden without the flag, so c-1 L1 is self_study and no row outside `lessons` appears.",
+  "name": "19-capacity-step2-at-limit",
+  "description": "Capacity, step 2, model 1.1: Tuesday load = 60 students (all in person) + 2 staff + 4 teachers on site (t-1 counted from the template) = 66 = passport. A move within the day does not change who is on site, so both lessons move (exactly at the limit passes). The other dates are non-school dates, so no other date of the week is over.",
   "params": {
     "works_that_day": "has_lesson_that_day",
     "off_profile": "no_row_with_subject",
@@ -10,7 +10,7 @@
   },
   "given": {
     "request": {
-      "job_id": "5d0b5e1c-0000-4000-8000-000000000012",
+      "job_id": "5d0b5e1c-0000-4000-8000-000000000019",
       "date": "2026-11-17",
       "absence_dates": [
         "2026-11-17"
@@ -20,6 +20,10 @@
         {
           "class_id": "c-1",
           "lesson_no": 1
+        },
+        {
+          "class_id": "c-2",
+          "lesson_no": 2
         }
       ],
       "not_before": "2026-11-16",
@@ -37,7 +41,7 @@
       "lessons_per_day": 6,
       "staff": 2,
       "capacity": {
-        "passport": 200
+        "passport": 66
       },
       "classes": [
         {
@@ -96,17 +100,17 @@
         },
         {
           "id": "t-3",
-          "weekly_limit": 12,
+          "weekly_limit": 2,
           "unavailable_days": []
         },
         {
           "id": "t-4",
-          "weekly_limit": 6,
+          "weekly_limit": 2,
           "unavailable_days": []
         },
         {
           "id": "t-5",
-          "weekly_limit": 5,
+          "weekly_limit": 12,
           "unavailable_days": []
         }
       ],
@@ -121,13 +125,13 @@
           "class_id": "c-1",
           "subject_id": "s-ukr",
           "teacher_id": "t-2",
-          "hours": 6
+          "hours": 5
         },
         {
           "class_id": "c-1",
           "subject_id": "s-art",
           "teacher_id": "t-5",
-          "hours": 5
+          "hours": 4
         },
         {
           "class_id": "c-2",
@@ -169,7 +173,7 @@
           "class_id": "c-1",
           "subject_id": "s-eng",
           "teacher_id": "t-3",
-          "hours": 2
+          "hours": 1
         },
         {
           "class_id": "c-2",
@@ -263,27 +267,6 @@
             "class_id": "c-1",
             "day": 2,
             "lesson_no": 3,
-            "subject_id": "s-eng",
-            "teacher_id": "t-3"
-          },
-          {
-            "class_id": "c-1",
-            "day": 2,
-            "lesson_no": 4,
-            "subject_id": "s-art",
-            "teacher_id": "t-5"
-          },
-          {
-            "class_id": "c-1",
-            "day": 2,
-            "lesson_no": 5,
-            "subject_id": "s-ukr",
-            "teacher_id": "t-2"
-          },
-          {
-            "class_id": "c-1",
-            "day": 2,
-            "lesson_no": 6,
             "subject_id": "s-eng",
             "teacher_id": "t-3"
           },
@@ -603,11 +586,18 @@
           "teacher_id": "t-1",
           "date": "2026-11-17",
           "lesson_nos": [
-            1
+            1,
+            2
           ]
         }
       ],
-      "allow_support_moves": false
+      "allow_support_moves": false,
+      "non_school_dates": [
+        "2026-11-16",
+        "2026-11-18",
+        "2026-11-19",
+        "2026-11-20"
+      ]
     }
   },
   "expect": {
@@ -619,6 +609,7 @@
     "step": 2,
     "never_teachers": [
       "t-1",
+      "t-3",
       "t-4",
       "t-5"
     ],
@@ -632,37 +623,31 @@
       {
         "class_id": "c-1",
         "lesson_no": 1,
-        "kind": "self_study",
+        "kind": "moved",
+        "moved_to": {
+          "date": "2026-11-17",
+          "lesson_no_in": [
+            4,
+            5,
+            6
+          ]
+        },
+        "step": 2
+      },
+      {
+        "class_id": "c-2",
+        "lesson_no": 2,
+        "kind": "moved",
+        "moved_to": {
+          "date": "2026-11-17",
+          "lesson_no_in": [
+            4,
+            5,
+            6
+          ]
+        },
         "step": 2
       }
     ]
-  },
-  "alternatives": [
-    {
-      "stage": "after_defence",
-      "given_patch": {
-        "allow_support_moves": true
-      },
-      "note": "With the flag (after the defence) the chain is allowed; the expected optimum is c-1 L1 moved to L4 plus a support row c-1 L4 (art) moved to L1, both at step 2. Only the weak properties below are normative until the support-move model exists.",
-      "expect": {
-        "status_in": [
-          "OPTIMAL",
-          "FEASIBLE"
-        ],
-        "step": 2,
-        "extra_rows_allowed": true,
-        "lessons": [
-          {
-            "class_id": "c-1",
-            "lesson_no": 1,
-            "kind_in": [
-              "teacher",
-              "moved"
-            ],
-            "step": 2
-          }
-        ]
-      }
-    }
-  ]
+  }
 }
