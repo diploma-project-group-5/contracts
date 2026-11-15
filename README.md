@@ -55,6 +55,8 @@ topics.v1.json                          маніфест топіків: про�
   невідомий MAJOR, відхиляє подію. solver відповідає `solve.completed{MODEL_INVALID,
   error.code=unsupported_schema_version}`.
 - Пакети npm і pip матимуть одну semver-версію. Сервіси закріплюють її точно (`0.3.1`, не `^0.3.1`).
+- Лише опис без зміни схеми — PATCH. Так, 0.4.1 додала опис значень `reason` у `validation.outcome.v1.json`
+  (`load.class_days[].reason`): що означає кожна причина для очного й дистанційного дня.
 
 ## Відхилення від спеки v24, які закодовано тут
 

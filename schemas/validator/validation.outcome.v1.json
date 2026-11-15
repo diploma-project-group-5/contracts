@@ -141,6 +141,7 @@
                     "minimum": 0
                   },
                   "reason": {
+                    "description": "Why the class-day has its format; explains only, never changes the verdict. Read it together with in_person. In-person day: priority = the class is flagged or has a lesson of a priority area that day; capacity_available = in person without priority. Remote day (never priority since validator-lib 0.3.0), judged by what would happen if the class came in person together with its teacher group (classes linked that day by a shared teacher, transitively): no_lessons = no lessons that day; no_shelter = model 1.2 and a lesson of the group is not held in the shelter; capacity_available = the in-person classes plus the group fit the day limits (room was left, not used); day_limit = otherwise. Consumers must tolerate values added in later MINOR versions.",
                     "enum": [
                       "no_lessons",
                       "no_shelter",
@@ -379,6 +380,7 @@
                     "minimum": 0
                   },
                   "reason": {
+                    "description": "Why the class-day has its format; explains only, never changes the verdict. Read it together with in_person. In-person day: priority = the class is flagged or has a lesson of a priority area that day; capacity_available = in person without priority. Remote day (never priority since validator-lib 0.3.0), judged by what would happen if the class came in person together with its teacher group (classes linked that day by a shared teacher, transitively): no_lessons = no lessons that day; no_shelter = model 1.2 and a lesson of the group is not held in the shelter; capacity_available = the in-person classes plus the group fit the day limits (room was left, not used); day_limit = otherwise. Consumers must tolerate values added in later MINOR versions.",
                     "enum": [
                       "no_lessons",
                       "no_shelter",
