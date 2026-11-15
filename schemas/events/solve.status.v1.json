@@ -43,25 +43,34 @@
           "enum": ["OPTIMAL", "FEASIBLE", "INFEASIBLE", "UNKNOWN", "MODEL_INVALID", "EXPIRED"]
         },
         "lessons": {
-          "description": "Weekly template; ids only (no teacher signatures).",
+          "description": "Weekly template; ids only (no teacher signatures). maxItems = 200 classes x 6 days x 10 lessons (solve.build.requested limits; a class has at most one lesson per slot).",
           "type": "array",
-          "items": { "$ref": "defs.v1.json#/$defs/lesson" }
+          "items": { "$ref": "defs.v1.json#/$defs/lesson" },
+          "maxItems": 12000
         },
         "day_formats": {
+          "description": "maxItems = 200 classes x 6 days.",
           "type": "array",
-          "items": { "$ref": "defs.v1.json#/$defs/day_format" }
+          "items": { "$ref": "defs.v1.json#/$defs/day_format" },
+          "maxItems": 1200
         },
         "conflicts": {
           "type": "array",
           "items": { "$ref": "conflict.v1.json" }
         },
         "error": {
-          "description": "Present only with status MODEL_INVALID.",
+          "description": "Present only with status MODEL_INVALID. unsupported_job_type: the solver cannot run this kind of job yet (substitution jobs until the stage 2 engine, ADR 2026-11-15); lessons, day_formats and conflicts are empty and no solve.started precedes it.",
           "type": "object",
           "required": ["code"],
           "properties": {
             "code": {
-              "enum": ["invalid_payload", "unsupported_schema_version", "result_too_large", "internal"]
+              "enum": [
+                "invalid_payload",
+                "unsupported_schema_version",
+                "result_too_large",
+                "internal",
+                "unsupported_job_type"
+              ]
             }
           },
           "additionalProperties": false

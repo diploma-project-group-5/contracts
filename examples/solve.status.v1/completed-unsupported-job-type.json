@@ -1,0 +1,19 @@
+{
+  "event_id": "121960dc-722a-5ca5-bce4-4769a6329602",
+  "type": "solve.completed",
+  "schema_version": "1.0",
+  "source": "solver",
+  "time": "2026-11-04T10:15:01+02:00",
+  "correlation_id": "req-5f2c9a",
+  "school_id": "7b0f8c1e-3d2a-4c51-9a6e-1f2b3c4d5e6f",
+  "data": {
+    "job_id": "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+    "status": "MODEL_INVALID",
+    "lessons": [],
+    "day_formats": [],
+    "conflicts": [],
+    "error": {
+      "code": "unsupported_job_type"
+    }
+  }
+}
