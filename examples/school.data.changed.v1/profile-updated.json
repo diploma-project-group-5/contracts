@@ -1,0 +1,18 @@
+{
+  "event_id": "2a3b6221-0ece-4469-b399-6eb6efd63501",
+  "type": "school.data.changed",
+  "schema_version": "1.0",
+  "source": "school-service",
+  "time": "2026-11-25T12:00:38.223Z",
+  "correlation_id": "req-profile-1",
+  "school_id": "5d0b6a1e-7c3f-4b2a-9e41-0a1d2c3b4e5f",
+  "data": {
+    "snapshot_version": 2,
+    "changes": [
+      {
+        "entity": "profile",
+        "op": "updated"
+      }
+    ]
+  }
+}

@@ -18,6 +18,8 @@ schemas/events/
   solve.status.v1.json                  solver → timetable: oneOf solve.started | solve.completed
                                         за полем конверта `type`
   solve.substitution.requested.v1.json  timetable → solver (етап 2, рушій замін з 0.5.0)
+  school.data.changed.v1.json           school → timetable: новий snapshot_version і що змінилось (0.6.0)
+  audit.recorded.v1.json                timetable → school: запис журналу дій (0.6.0)
 examples/<schema-stem>/*.json           приклади; кожен має проходити свою схему
 vectors/capacity/*.json                 спільні тест-вектори формули місткості (1.1 і 1.2)
 vectors/job-lifecycle/*.json            сценарії життєвого циклу задачі: послідовність подій
@@ -59,8 +61,7 @@ topics.v1.json                          маніфест топіків: про�
   перевіряють тести споживачів);
 - згенеровані вектори збігаються з виходом генераторів (`scripts/check-vectors.sh`).
 
-Перед тегом — ще тести споживачів на новому ref. Відома прогалина: для `school.data.changed` і
-`audit.recorded` схем ще немає (ADR 2026-11-25), `npm run check` їх перелічує.
+Перед тегом — ще тести споживачів на новому ref. З 0.6.0 схему має кожен топік маніфесту.
 
 ## Версіонування
 
@@ -83,6 +84,17 @@ topics.v1.json                          маніфест топіків: про�
   - вектори `vectors/substitution-solve/*` і сценарій `vectors/job-lifecycle/14-substitution-completed`.
   Консюмери толерантні до нових полів, тож timetable на contracts 0.4.x не ламається; щоб отримати пропозиції,
   він має оновити закріплену версію.
+
+- **0.6.0 (MINOR, лише адитивно)** — схеми двох подій, що досі жили лише в коді сервісів (аудит, ADR
+  `2026-11-25-audit-findings-code-freeze`, знахідка Z3-14):
+  - `school.data.changed` (school → timetable): `snapshot_version` і `changes[]` {`entity`, `op`, `id`?,
+    `teacher_no`? для видаленого вчителя};
+  - `audit.recorded` (timetable → school): `at`, `actor` (логін), `action`, `target` (ідентифікатор або null),
+    `details`;
+  - `topics.v1.json` посилається на обидві; приклади в `examples/`.
+  Схеми написано за кодом продюсерів (school-service `src/domain/changes.ts`, timetable-service
+  `src/domain/context.ts`) і перевірено на реальних подіях стенду. Сервіси поки перевіряють ці події власним
+  кодом; перевірка схемою в їхніх тестах — після захисту.
 
 ## Відхилення від спеки v24, які закодовано тут
 
@@ -142,6 +154,9 @@ topics.v1.json                          маніфест топіків: про�
   `examples/` цими схемами; каталог береться з `LAD_CONTRACTS_DIR`, за замовчуванням `../contracts`.
 - **timetable-service** (TS) публікує `solve.build.requested` через outbox, споживає `solve.status`
   (inbox за `event_id`) і показує `conflicts[]`. Типи генерує з цих схем.
+- **school-service** (TS) публікує `school.data.changed` в outbox тією ж транзакцією, що й зміну даних, і
+  споживає `audit.recorded` (записи журналу дій timetable). **timetable-service** споживає `school.data.changed`
+  і публікує `audit.recorded`. Обидві схеми — з 0.6.0.
 - **validator-lib** (TS) використовує `conflict.v1.json` для `conflicts[]` і проганяє
   `vectors/capacity/*` у своїх тестах.
 

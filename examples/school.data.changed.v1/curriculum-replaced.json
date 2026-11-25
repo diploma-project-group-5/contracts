@@ -1,0 +1,18 @@
+{
+  "event_id": "8b3c4d5e-6f70-4a81-9c92-0d1e2f3a4b5c",
+  "type": "school.data.changed",
+  "schema_version": "1.0",
+  "source": "school-service",
+  "time": "2026-11-25T12:15:00.000Z",
+  "correlation_id": "req-curriculum-1",
+  "school_id": "5d0b6a1e-7c3f-4b2a-9e41-0a1d2c3b4e5f",
+  "data": {
+    "snapshot_version": 5,
+    "changes": [
+      {
+        "entity": "curriculum",
+        "op": "replaced"
+      }
+    ]
+  }
+}

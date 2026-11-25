@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/events/audit.recorded.v1.json",
+  "title": "audit.recorded (v1)",
+  "description": "timetable -> school, topic audit.recorded, key school_id. The school's action journal lives in school-service; timetable records its actions there through its outbox, in the same transaction as the action, so no entry is lost (spec §07 «Журнал», §12). school-service writes its own entries directly, without this event. No surnames: actor is a login, target and details carry identifiers (spec §04; the journal shows a teacher as «Вчитель #N»).",
+  "allOf": [
+    {
+      "$ref": "envelope.v1.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "audit.recorded"
+    },
+    "source": {
+      "const": "timetable-service"
+    },
+    "data": {
+      "$ref": "#/$defs/recorded"
+    }
+  },
+  "$defs": {
+    "recorded": {
+      "type": "object",
+      "required": [
+        "at",
+        "actor",
+        "action",
+        "target",
+        "details"
+      ],
+      "properties": {
+        "at": {
+          "description": "When the action happened; the journal entry gets this time.",
+          "$ref": "defs.v1.json#/$defs/instant"
+        },
+        "actor": {
+          "description": "Login of the scheduler (or a service name) who acted; never a teacher signature.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "action": {
+          "description": "What was done. timetable sends: timetable_published, alert_plan_approved, alert_plan_activated, alert_plan_ended, absence_recorded, absence_cancelled, substitution_approved, substitution_rejected, qr_rotated, holidays_set, holidays_cleared, teacher_exported. A new action is a MINOR change; school-service stores any value.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "target": {
+          "description": "Identifier the action was done on (timetable_id, activation id, teacher_id, school_id, …), or null.",
+          "oneOf": [
+            {
+              "$ref": "defs.v1.json#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "details": {
+          "description": "Action-specific facts: identifiers, dates, counts, and order_no and order_date of a publication or approval. Never a person's name (approved_by stays in timetable), a teacher signature or a reason of absence — the journal is without surnames (spec §07 «Журнал»).",
+          "type": "object",
+          "propertyNames": {
+            "not": {
+              "enum": [
+                "approved_by",
+                "label",
+                "signature",
+                "reason"
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
