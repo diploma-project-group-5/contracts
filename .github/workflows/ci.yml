@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+    branches: [develop, main, "feat/**", "fix/**", "chore/**"]
+  pull_request:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7, resolved 2026-11-08
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38  # v6.5.0, resolved 2026-11-14
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install (locked)
+        run: npm ci
+      # Schemas compile, examples match their schemas, topics point at existing schemas, vectors parse,
+      # and generated vectors equal their generators' output.
+      - name: Check contracts
+        run: npm run check
