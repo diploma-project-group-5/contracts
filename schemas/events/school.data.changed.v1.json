@@ -38,13 +38,14 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/change"
-          }
+          },
+          "minItems": 1
         }
       },
       "additionalProperties": false
     },
     "change": {
-      "description": "Pairs school-service sends: profile updated; bells replaced; class, subject and teacher created/updated; class and subject archived; teacher deleted (with teacher_no); curriculum replaced/updated. `id` is set for a single class, subject or teacher and absent for profile, bells and curriculum. Rules: `id` is required for class, subject and teacher; `teacher_no` is required for a deleted teacher and forbidden otherwise (without it timetable could not replace the signature, spec §07 DEL /teachers/{id}).",
+      "description": "Exactly the pairs school-service sends: profile updated; bells replaced; class, subject and teacher created/updated; class and subject archived; teacher deleted; curriculum replaced/updated (updated comes with a class archive that removed its rows). `id` is required for class, subject and teacher and absent for profile, bells and curriculum; `teacher_no` is required for a deleted teacher and forbidden otherwise (without it timetable could not replace the signature, spec §07 DEL /teachers/{id}).",
       "type": "object",
       "required": [
         "entity",
@@ -86,11 +87,7 @@
           "if": {
             "properties": {
               "entity": {
-                "enum": [
-                  "class",
-                  "subject",
-                  "teacher"
-                ]
+                "const": "profile"
               }
             },
             "required": [
@@ -99,11 +96,139 @@
           },
           "then": {
             "properties": {
+              "op": {
+                "enum": [
+                  "updated"
+                ]
+              },
+              "id": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "bells"
+              }
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "replaced"
+                ]
+              },
+              "id": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "class"
+              }
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "created",
+                  "updated",
+                  "archived"
+                ]
+              },
               "id": true
             },
             "required": [
               "id"
             ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "subject"
+              }
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "created",
+                  "updated",
+                  "archived"
+                ]
+              },
+              "id": true
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "teacher"
+              }
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "created",
+                  "updated",
+                  "deleted"
+                ]
+              },
+              "id": true
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "curriculum"
+              }
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "replaced",
+                  "updated"
+                ]
+              },
+              "id": false
+            }
           }
         },
         {
