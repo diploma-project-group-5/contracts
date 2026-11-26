@@ -1,0 +1,20 @@
+{
+  "event_id": "7a2b3c4d-5e6f-4a70-8b81-9c0d1e2f3a4b",
+  "type": "school.data.changed",
+  "schema_version": "1.0",
+  "source": "school-service",
+  "time": "2026-11-25T12:10:00.000Z",
+  "correlation_id": "req-teacher-1",
+  "school_id": "5d0b6a1e-7c3f-4b2a-9e41-0a1d2c3b4e5f",
+  "data": {
+    "snapshot_version": 4,
+    "changes": [
+      {
+        "entity": "teacher",
+        "op": "deleted",
+        "id": "15d65935-2014-56c1-81c3-ba6d591a6413",
+        "teacher_no": 12
+      }
+    ]
+  }
+}

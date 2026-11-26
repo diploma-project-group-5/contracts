@@ -20,7 +20,7 @@
       "name": "school.data.changed",
       "producer": "school-service",
       "consumers": ["timetable-service"],
-      "schema": null,
+      "schema": "schemas/events/school.data.changed.v1.json",
       "stage": 1
     },
     {
@@ -50,7 +50,7 @@
       "name": "audit.recorded",
       "producer": "timetable-service",
       "consumers": ["school-service"],
-      "schema": null,
+      "schema": "schemas/events/audit.recorded.v1.json",
       "stage": 1
     }
   ],

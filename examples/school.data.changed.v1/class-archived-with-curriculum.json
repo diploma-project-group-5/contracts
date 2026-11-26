@@ -1,0 +1,23 @@
+{
+  "event_id": "9d4e5f60-7182-4a93-8eb4-1f2a3b4c5d6e",
+  "type": "school.data.changed",
+  "schema_version": "1.0",
+  "source": "school-service",
+  "time": "2026-11-25T12:20:00.000Z",
+  "correlation_id": "req-class-archive-1",
+  "school_id": "5d0b6a1e-7c3f-4b2a-9e41-0a1d2c3b4e5f",
+  "data": {
+    "snapshot_version": 6,
+    "changes": [
+      {
+        "entity": "class",
+        "op": "archived",
+        "id": "0c2e7d4a-5b6f-4a8e-9c1d-2e3f4a5b6c7d"
+      },
+      {
+        "entity": "curriculum",
+        "op": "updated"
+      }
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "event_id": "ad5e6f70-8192-4aa3-9eb4-2f3a4b5c6d7e",
+  "type": "audit.recorded",
+  "schema_version": "1.0",
+  "source": "timetable-service",
+  "time": "2026-11-25T12:02:32.600Z",
+  "correlation_id": "req-approve-1",
+  "school_id": "5d0b6a1e-7c3f-4b2a-9e41-0a1d2c3b4e5f",
+  "data": {
+    "at": "2026-11-25T12:02:32.504Z",
+    "actor": "demo",
+    "action": "substitution_approved",
+    "target": "5faea18b-de76-5f0d-972c-503aba2b582d",
+    "details": {
+      "job_id": "511e7173-0784-4c55-9275-013b35f6f272",
+      "date": "2026-11-27",
+      "lessons": 1
+    }
+  }
+}

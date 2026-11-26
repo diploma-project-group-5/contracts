@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lad.example/contracts/schemas/events/school.data.changed.v1.json",
+  "title": "school.data.changed (v1)",
+  "description": "school -> timetable, topic school.data.changed, key school_id. Written to the school outbox in the same transaction as the change of school data (spec §09, §12): the new snapshot_version and what changed. Only identifiers — no class or subject names, no teacher signatures (spec §04). timetable keeps the highest known snapshot_version (a version built on an older one is stale), creates a QR for a created class or teacher, revokes it for an archived class or a deleted teacher, and for a deleted teacher replaces the signature copies in its versions with «Вчитель #N». Changes are applied idempotently per entity, so replaying an old event loses nothing.",
+  "allOf": [
+    {
+      "$ref": "envelope.v1.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "school.data.changed"
+    },
+    "source": {
+      "const": "school-service"
+    },
+    "data": {
+      "$ref": "#/$defs/changed"
+    }
+  },
+  "$defs": {
+    "changed": {
+      "type": "object",
+      "required": [
+        "snapshot_version",
+        "changes"
+      ],
+      "properties": {
+        "snapshot_version": {
+          "description": "The school's snapshot_version after this change; it grows by one per change (spec §04 «Заклад (профіль)»; timetable keeps the last known one in «Стан закладу»).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "changes": {
+          "description": "What changed in this transaction; usually one item.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/change"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "change": {
+      "description": "Exactly the pairs school-service sends: profile updated; bells replaced; class, subject and teacher created/updated; class and subject archived; teacher deleted; curriculum replaced/updated (updated comes with a class archive that removed its rows). `id` is required for class, subject and teacher and absent for profile, bells and curriculum; `teacher_no` is required for a deleted teacher and forbidden otherwise (without it timetable could not replace the signature, spec §07 DEL /teachers/{id}).",
+      "type": "object",
+      "required": [
+        "entity",
+        "op"
+      ],
+      "properties": {
+        "entity": {
+          "enum": [
+            "profile",
+            "bells",
+            "class",
+            "subject",
+            "teacher",
+            "curriculum"
+          ]
+        },
+        "op": {
+          "enum": [
+            "created",
+            "updated",
+            "archived",
+            "deleted",
+            "replaced"
+          ]
+        },
+        "id": {
+          "description": "class_id, subject_id or teacher_id of the changed entity.",
+          "$ref": "defs.v1.json#/$defs/id"
+        },
+        "teacher_no": {
+          "description": "Only for a deleted teacher: timetable writes «Вчитель #<teacher_no>» instead of the signature (spec §07, DEL /teachers/{id}).",
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "profile"
+              }
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "updated"
+                ]
+              },
+              "id": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "bells"
+              }
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "replaced"
+                ]
+              },
+              "id": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "class"
+              }
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "created",
+                  "updated",
+                  "archived"
+                ]
+              },
+              "id": true
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "subject"
+              }
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "created",
+                  "updated",
+                  "archived"
+                ]
+              },
+              "id": true
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "teacher"
+              }
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "created",
+                  "updated",
+                  "deleted"
+                ]
+              },
+              "id": true
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "curriculum"
+              }
+            },
+            "required": [
+              "entity"
+            ]
+          },
+          "then": {
+            "properties": {
+              "op": {
+                "enum": [
+                  "replaced",
+                  "updated"
+                ]
+              },
+              "id": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "entity": {
+                "const": "teacher"
+              },
+              "op": {
+                "const": "deleted"
+              }
+            },
+            "required": [
+              "entity",
+              "op"
+            ]
+          },
+          "then": {
+            "properties": {
+              "teacher_no": true
+            },
+            "required": [
+              "teacher_no"
+            ]
+          },
+          "else": {
+            "not": {
+              "properties": {
+                "teacher_no": true
+              },
+              "required": [
+                "teacher_no"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}
